@@ -1,0 +1,69 @@
+parser MyParser(packet_in packet,
+                    out headers hdr,
+                    inout metadata meta,
+                    inout standard_metadata_t standard_metadata) {
+    state start {
+        transition parse_ethernet;
+    }
+
+    state parse_ethernet {
+        packet.extract(hdr.ethernet);
+        transition select(hdr.ethernet.etherType){
+            TYPE_IPV4: parse_ipv4;
+            TYPE_IPV6: parse_ipv6;
+            default:   accept;
+        }
+    }
+
+    state parse_ipv4 {
+        packet.extract(hdr.ip.v4);
+        transition select(hdr.ip.v4.protocol){
+            TYPE_ICMP: parse_icmp;
+            TYPE_TCP:  parse_tcp;
+            TYPE_UDP:  parse_udp;
+            default:   accept;
+        }
+    }
+
+    state parse_ipv6 {
+        packet.extract(hdr.ip.v6);
+        transition select(hdr.ip.v6.nextHeader){
+            TYPE_ICMP: parse_icmp;
+            TYPE_TCP:  parse_tcp;
+            TYPE_UDP:  parse_udp;
+            default:   accept;
+        }
+    }
+
+    state parse_icmp {
+        packet.extract(hdr.ip_encap_protocol.icmp);
+        transition accept;
+    }
+
+
+    state parse_tcp {
+        packet.extract(hdr.ip_encap_protocol.tcp);
+        transition accept;
+    }
+
+    state parse_udp {
+        packet.extract(hdr.ip_encap_protocol.udp);
+        transition accept;
+    }
+}
+
+control MyDeparser(packet_out packet, in headers hdr) {
+    apply {
+        packet.emit(hdr.ethernet);
+        packet.emit(hdr.ip);
+        packet.emit(hdr.ip_encap_protocol);
+    }
+}
+
+control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
+    apply { }
+}
+
+control MyComputeChecksum(inout headers hdr, inout metadata meta) {
+    apply { }
+}
