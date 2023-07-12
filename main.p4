@@ -1,8 +1,8 @@
 #include <core.p4>
 #include <v1model.p4>
 
-#include "header.p4"
-#include "parser.p4"
+#include "include/header.p4"
+#include "include/parser.p4"
 
 
 void get_ports(inout headers hdr, inout metadata meta){

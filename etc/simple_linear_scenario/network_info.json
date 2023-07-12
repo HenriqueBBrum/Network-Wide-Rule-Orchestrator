@@ -1,15 +1,15 @@
 {
-    "hosts": ["h1","h2","h3","h4","h5"],
+    "hosts": ["hinternet","h2","h3"],
     "switches": {
         "s1": {
             "free_table_entries" : 500,
             "hops_from_internet" : 0,
-            "hops_from_host" : 1
+            "hops_from_host" : 2
         },
         "s2": {
             "free_table_entries" : 400,
             "hops_from_internet" : 1,
-            "hops_from_host" : 0
+            "hops_from_host" : 1
         },
         "s3": {
             "free_table_entries" : 300,
@@ -18,8 +18,6 @@
         }
     },
     "links": [
-        ["s1", "s2", 300, 0.05], ["s2", "s3", 100, 0.1], 
-        ["s2", "h1", 100, 0.1], ["s2", "h2", 100, 0.1],
-        ["s3", "h3", 100, 0.1], ["s3", "h4", 100, 0.1], ["s3", "h5", 100, 0.1]
+        ["hinternet", "s1"], ["s1", "s2"], ["s2", "s3"], ["h2", "s3"], ["h3", "s3"]
     ]
 }
