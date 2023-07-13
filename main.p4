@@ -197,7 +197,6 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     }
 
     // **** Aply block ****
-   
     apply {
         received.count((bit<32>) standard_metadata.ingress_port);
         forward_to_ids = false;

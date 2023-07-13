@@ -91,6 +91,7 @@ class ExerciseTopo(Topo):
             else:
                 # add default switch
                 switchClass = None
+
             self.addSwitch(sw, log_file="%s/%s.log" %(log_dir, sw), cls=switchClass)
 
         for link in host_links:
@@ -252,7 +253,6 @@ class ExerciseRunner:
                                 pcap_dump=self.pcap_dir)
 
         self.topo = ExerciseTopo(self.hosts, self.switches, self.links, self.log_dir, self.bmv2_exe, self.pcap_dir)
-
         self.net = Mininet(topo = self.topo,
                       link = TCLink,
                       host = P4Host,

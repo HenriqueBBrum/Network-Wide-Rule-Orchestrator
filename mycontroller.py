@@ -51,29 +51,23 @@ def main(args):
         # Create a switch connection object for s1 and s2; this is backed by a P4Runtime gRPC connection.
         # Also, dump all P4Runtime messages sent to switch to given txt files.
         switches = {}
-        for key in device_table_entries_map.keys():
-            id = int(key.split('s')[0])
+        for switch_id, rules in device_table_entries_map.items():
+            id = int(switch_id.split('s')[0])
             switch = p4runtime_lib.bmv2.Bmv2SwitchConnection( 
-                name=key,
+                name=switch_id,
                 address='127.0.0.1:5005'+str(id),
                 device_id=id,
-                proto_dump_file='logs/'+key+'-p4runtime-requests.txt')
+                proto_dump_file='logs/'+switch_id+'-p4runtime-requests.txt')
 
 
             # Send master arbitration update message to establish this controller as master
             switch.MasterArbitrationUpdate()
-            print("Installed P4 Program using SetForwardingPipelineConfig on swithc "+key)
+            print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
             switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
                                        bmv2_json_file_path=args.bmv2_json)
-            switches[key] = switch
-
-        # Write the rules that tunnel traffic from h1 to h2
-        # write_tunnel_rules(p4info_helper, ingress_sw=s1, egress_sw=s2, tunnel_id=100,
-        #                  dst_eth_addr="08:00:00:00:02:22", dst_ip_addr="10.0.2.2")
-
-        # # Write the rules that tunnel traffic from h2 to h1
-        # write_tunnel_rules(p4info_helper, ingress_sw=s2, egress_sw=s1, tunnel_id=200,
-        #                  dst_eth_addr="08:00:00:00:01:11", dst_ip_addr="10.0.1.1")
+            switches[switch_id] = switch
+            write_rules(p4info_helper, switch_id, rules)   
+            read_table_rules()         
 
         # # TODO Uncomment the following two lines to read table entries from s1 and s2
         # readTableRules(p4info_helper, s1)
@@ -108,7 +102,7 @@ def distribute_rules(network_info, rules, strategy):
             initial_nodes.append(node)
             network.add_edge("start", node, weight=0)
             end = len(rules) if data["free_table_entries"] > len(rules) else data["free_table_entries"]
-            device_table_entries_map[node] = (0, end)
+            device_table_entries_map[node] = rules[0:end]
         else:
             not_initial_nodes.append(node)
 
@@ -123,11 +117,9 @@ def distribute_rules(network_info, rules, strategy):
     for node in not_initial_nodes:
         l = nx.shortest_path_length(network, source="start", target=node, weight="weight")
         end = len(rules) if network_info["switches"][node]["free_table_entries"] > len(rules) else network_info["switches"][node]["free_table_entries"]
-        device_table_entries_map[node] = (l, l+end)
+        device_table_entries_map[node] = rules[l, l+end]
 
     return device_table_entries_map
-
-
 
 # Write the subset of table entries chosen for a swtich 
 def write_tunnel_rules(p4info_helper, ingress_sw, egress_sw, tunnel_id,
@@ -151,7 +143,7 @@ def write_tunnel_rules(p4info_helper, ingress_sw, egress_sw, tunnel_id,
     """
     # 1) Tunnel Ingress Rule
     table_entry = p4info_helper.buildTableEntry(
-        table_name="MyIngress.ipv4_lpm",
+        table_name="MyIngress.ipv4_ids",
         match_fields={
             "hdr.ipv4.dstAddr": (dst_ip_addr, 32)
         },
