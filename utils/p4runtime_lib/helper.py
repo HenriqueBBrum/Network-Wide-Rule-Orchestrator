@@ -98,6 +98,8 @@ class P4InfoHelper(object):
         p4runtime_match = p4runtime_pb2.FieldMatch()
         p4runtime_match.field_id = p4info_match.id
         match_type = p4info_match.match_type
+        print(p4info_match, bitwidth, value, p4runtime_match.exact)
+
         if match_type == p4info_pb2.MatchField.EXACT:
             exact = p4runtime_match.exact
             exact.value = encode(value, bitwidth)

@@ -4,8 +4,11 @@ import sys
 import json
 import networkx as nx
 import matplotlib.pyplot as plt
+
 from networkx.drawing.nx_agraph import write_dot, graphviz_layout
 from time import sleep
+from itertools import islice
+
 
 import grpc
 
@@ -22,13 +25,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description='P4Runtime Controller')
     parser.add_argument('--p4info', help='p4info proto in text format from p4c',
                         type=str, required=False, default='./build/main.p4.p4info.txt')
-    parser.add_argument('--bmv2-json', help='BMv2 JSON file from p4c',
+    parser.add_argument('--bmv2_json', help='BMv2 JSON file from p4c',
                         type=str, required=False, default='./build/main.json')
-    parser.add_argument('--network-info', help='Network information',
+    parser.add_argument('--network_info', help='Network information',
                         type=str, required=True)
-    parser.add_argument('--table-entries', help='Table entries file',
+    parser.add_argument('--table_entries', help='Table entries file',
                         type=str, required=True)
-    parser.add_argument('--start-nodes-strategy', help='BMv2 JSON file from p4c',
+    parser.add_argument('--start_nodes_strategy', help='BMv2 JSON file from p4c',
                         type=str, required=False, default='PRIORITIZE_OUTER')
 
     return parser.parse_args()
@@ -36,30 +39,30 @@ def parse_args():
 
 def main(args):
     # Instantiate a P4Runtime helper from the p4info file
-    p4info_helper = p4runtime_lib.helper.P4InfoHelper(args.p4info_file_path)
+    p4info_helper = p4runtime_lib.helper.P4InfoHelper(args.p4info)
 
-    with open(network_information_file) as f:
+    with open(args.network_info) as f:
         network_info = json.load(f)
 
-    with open(rules_filepath) as rule_file:
+    with open(args.table_entries) as rule_file:
         rules = rule_file.read().splitlines()
 
     # !!!!!!!!!!!!!!!Validate swithc name. Name must be 's<non negative integer>'
-    device_table_entries_map = distribute_rules(network_info, rules, strategy)
-
+    device_table_entries_map = distribute_rules(network_info, rules, args.start_nodes_strategy)
+    print(device_table_entries_map.keys())
     try:
         # Create a switch connection object for s1 and s2; this is backed by a P4Runtime gRPC connection.
         # Also, dump all P4Runtime messages sent to switch to given txt files.
         switches = {}
         for switch_id, rules in device_table_entries_map.items():
-            id = int(switch_id.split('s')[0])
+            id = int(switch_id.split('s')[1])
             switch = p4runtime_lib.bmv2.Bmv2SwitchConnection( 
                 name=switch_id,
                 address='127.0.0.1:5005'+str(id),
-                device_id=id,
+                device_id=id-1,
                 proto_dump_file='logs/'+switch_id+'-p4runtime-requests.txt')
 
-
+            print(switch)
             # Send master arbitration update message to establish this controller as master
             switch.MasterArbitrationUpdate()
             print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
@@ -67,7 +70,6 @@ def main(args):
                                        bmv2_json_file_path=args.bmv2_json)
             switches[switch_id] = switch
             write_rules(p4info_helper, switch, rules)   
-            read_table_rules()         
 
         # # TODO Uncomment the following two lines to read table entries from s1 and s2
         # readTableRules(p4info_helper, s1)
@@ -117,50 +119,57 @@ def distribute_rules(network_info, rules, strategy):
     for node in not_initial_nodes:
         l = nx.shortest_path_length(network, source="start", target=node, weight="weight")
         end = len(rules) if network_info["switches"][node]["free_table_entries"] > len(rules) else network_info["switches"][node]["free_table_entries"]
-        device_table_entries_map[node] = rules[l, l+end]
+        device_table_entries_map[node] = rules[l: l+end]
 
     return device_table_entries_map
 
 
-
+# Parses table entires file and writes them to the corresponding switch
 def write_rules(p4info_helper, switch, rules):
     for rule in rules:
         rule_fields = get_rule_fields(rule)
-
+        print(rule_fields)
         if rule_fields["table_name"] == "ipv4_ids":
             table_entry = p4info_helper.buildTableEntry(
                 table_name="MyIngress.ipv4_ids",
+                priority=int(rule_fields["priority"]),
                 match_fields={
-                    "hdr.ip.v4.protocol": rule_fields["protocol"],
+                    "hdr.ip.v4.protocol": int(rule_fields["protocol"], base=16),
                     "hdr.ip.v4.srcAddr": (rule_fields["srcAddr"], rule_fields["srcMask"]),
-                    "meta.srcPort":(rule_fields["srcPortLower"], rule_fields["srcPortUpper"]),
+                    "meta.srcPort":(int(rule_fields["srcPortLower"]), int(rule_fields["srcPortUpper"])),
                     "hdr.ip.v4.dstAddr": (rule_fields["dstAddr"], rule_fields["dstMask"]),
-                    "meta.dstPort": (rule_fields["dstPortLower"], rule_fields["dstPortUpper"]),
-                    "meta.flags" (rule_fields["flags"], rule_fields["flagsMask"])
+                    "meta.dstPort": (int(rule_fields["dstPortLower"]), int(rule_fields["dstPortUpper"])),
+                    "meta.flags": (rule_fields["flags"], rule_fields["flagsMask"])
                 },
                 action_name="MyIngress."+rule_fields["action"],
                 action_params={
-                    "dst_id": tunnel_id,
+                    "port": int(rule_fields["new_port"]),
                 })
         else:
             table_entry = p4info_helper.buildTableEntry(
                 table_name="MyIngress.ipv6_ids",
-                priority=rule_fields["priority"]
+                priority=int(rule_fields["priority"]),
                 match_fields={
-                    "hdr.ip.v6.nextHeader": rule_fields["protocol"],
+                    "hdr.ip.v6.nextHeader": int(rule_fields["protocol"], base=16)   ,
                     "hdr.ip.v6.srcAddr": (rule_fields["srcAddr"], rule_fields["srcMask"]),
-                    "meta.srcPort":(rule_fields["srcPortLower"], rule_fields["srcPortUpper"]),
+                    "meta.srcPort":(int(rule_fields["srcPortLower"]), int(rule_fields["srcPortUpper"])),
                     "hdr.ip.v6.dstAddr": (rule_fields["dstAddr"], rule_fields["dstMask"]),
-                    "meta.dstPort": (rule_fields["dstPortLower"], rule_fields["dstPortUpper"]),
-                    "meta.flags" (rule_fields["flags"], rule_fields["flagsMask"])
+                    "meta.dstPort": (int(rule_fields["dstPortLower"]), int(rule_fields["dstPortUpper"])),
+                    "meta.flags": (rule_fields["flags"], rule_fields["flagsMask"])
                 },
                 action_name="MyIngress."+rule_fields["action"],
                 action_params={
-                    "port": rules_fields["new_port"],
+                    "port": int(rule_fields["new_port"]),
                 })
 
-        switch.WriteTableEntry(table_entry)
+        print("Table entry: ")
+        print(table_entry)
+        print(rules_fields)
+        print("\n")
 
+        # switch.WriteTableEntry(table_entry)
+
+# Pares a table entry and saves the meaningful fields to a dict
 def get_rule_fields(rule):
     rule_fields = {}
     rule_items = rule.split(" ")
@@ -187,6 +196,7 @@ def get_rule_fields(rule):
     rule_fields["new_port"] = rule_items[10]
     rule_fields["priority"] = rule_items[11]
 
+    return rule_fields
 
 
 
@@ -214,7 +224,12 @@ def readTableRules(p4info_helper, sw):
                 print('%r' % p.value, end=' ')
             print()
 
-
+def printGrpcError(e):
+    print("gRPC Error:", e.details(), end=' ')
+    status_code = e.code()
+    print("(%s)" % status_code.name, end=' ')
+    traceback = sys.exc_info()[2]
+    print("[%s:%d]" % (traceback.tb_frame.f_code.co_filename, traceback.tb_lineno))
 
 if __name__ == '__main__':
     args = parse_args()
