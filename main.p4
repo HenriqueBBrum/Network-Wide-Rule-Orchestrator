@@ -75,7 +75,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
            meta.srcPort: range;
            hdr.ip.v4.dstAddr: ternary;
            meta.dstPort: range;
-           meta.flags: ternary;
+           meta.flags: exact;
         }
         size = 10240;
         default_action = pass(PASS_PORT);
@@ -95,7 +95,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
            meta.srcPort: range;
            hdr.ip.v6.dstAddr: ternary;
            meta.dstPort: range;
-           meta.flags: ternary;
+           meta.flags: exact;
         }
         size = 10240;
         default_action = pass(PASS_PORT);

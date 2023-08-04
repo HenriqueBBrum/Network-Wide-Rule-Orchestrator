@@ -19,6 +19,7 @@ sys.path.append(
                  'utils/'))
 import p4runtime_lib.bmv2
 import p4runtime_lib.helper
+from p4runtime_lib.error_utils import printGrpcError
 from p4runtime_lib.switch import ShutdownAllSwitchConnections
 
 def parse_args():
@@ -47,32 +48,32 @@ def main(args):
     with open(args.table_entries) as rule_file:
         rules = rule_file.read().splitlines()
 
-    # !!!!!!!!!!!!!!!Validate swithc name. Name must be 's<non negative integer>'
+    # !!!!!!!!!!!!!!!Validate switch name. Name must be 's<non negative integer>'
     device_table_entries_map = distribute_rules(network_info, rules, args.start_nodes_strategy)
     print(device_table_entries_map.keys())
     try:
         # Create a switch connection object for s1 and s2; this is backed by a P4Runtime gRPC connection.
-        # Also, dump all P4Runtime messages sent to switch to given txt files.
         switches = {}
         for switch_id, rules in device_table_entries_map.items():
-            id = int(switch_id.split('s')[1])
+            num_id = int(switch_id.split('s')[1])
             switch = p4runtime_lib.bmv2.Bmv2SwitchConnection( 
                 name=switch_id,
-                address='127.0.0.1:5005'+str(id),
-                device_id=id-1,
+                address='127.0.0.1:5005'+str(num_id),
+                device_id=num_id-1,
                 proto_dump_file='logs/'+switch_id+'-p4runtime-requests.txt')
 
-            print(switch)
             # Send master arbitration update message to establish this controller as master
             switch.MasterArbitrationUpdate()
             print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
             switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
                                        bmv2_json_file_path=args.bmv2_json)
             switches[switch_id] = switch
+            # Writes for each switch its rules
             write_rules(p4info_helper, switch, rules)   
 
-        # # TODO Uncomment the following two lines to read table entries from s1 and s2
-        # readTableRules(p4info_helper, s1)
+
+        for switch_id, switch_connection in switches.items():
+            readTableRules(p4info_helper, switch_connection)
         # readTableRules(p4info_helper, s2)
 
         while True:
@@ -123,53 +124,34 @@ def distribute_rules(network_info, rules, strategy):
 
     return device_table_entries_map
 
-
 # Parses table entires file and writes them to the corresponding switch
 def write_rules(p4info_helper, switch, rules):
     for rule in rules:
         rule_fields = get_rule_fields(rule)
-        print(rule_fields)
         if rule_fields["table_name"] == "ipv4_ids":
+            # Remove "don't care entries" (e.g. 0.0.0.0 IP or 0-65535 port range) because P4Runtime does not accept them
+            match_fields = build_match_fields(rule_fields) 
             table_entry = p4info_helper.buildTableEntry(
                 table_name="MyIngress.ipv4_ids",
                 priority=int(rule_fields["priority"]),
-                match_fields={
-                    "hdr.ip.v4.protocol": int(rule_fields["protocol"], base=16),
-                    "hdr.ip.v4.srcAddr": (rule_fields["srcAddr"], rule_fields["srcMask"]),
-                    "meta.srcPort":(int(rule_fields["srcPortLower"]), int(rule_fields["srcPortUpper"])),
-                    "hdr.ip.v4.dstAddr": (rule_fields["dstAddr"], rule_fields["dstMask"]),
-                    "meta.dstPort": (int(rule_fields["dstPortLower"]), int(rule_fields["dstPortUpper"])),
-                    "meta.flags": (rule_fields["flags"], rule_fields["flagsMask"])
-                },
+                match_fields=match_fields,
                 action_name="MyIngress."+rule_fields["action"],
                 action_params={
                     "port": int(rule_fields["new_port"]),
                 })
         else:
+            match_fields = build_match_fields(rule_fields, 6)
             table_entry = p4info_helper.buildTableEntry(
                 table_name="MyIngress.ipv6_ids",
                 priority=int(rule_fields["priority"]),
-                match_fields={
-                    "hdr.ip.v6.nextHeader": int(rule_fields["protocol"], base=16)   ,
-                    "hdr.ip.v6.srcAddr": (rule_fields["srcAddr"], rule_fields["srcMask"]),
-                    "meta.srcPort":(int(rule_fields["srcPortLower"]), int(rule_fields["srcPortUpper"])),
-                    "hdr.ip.v6.dstAddr": (rule_fields["dstAddr"], rule_fields["dstMask"]),
-                    "meta.dstPort": (int(rule_fields["dstPortLower"]), int(rule_fields["dstPortUpper"])),
-                    "meta.flags": (rule_fields["flags"], rule_fields["flagsMask"])
-                },
+                match_fields=match_fields,
                 action_name="MyIngress."+rule_fields["action"],
                 action_params={
                     "port": int(rule_fields["new_port"]),
                 })
-
-        print("Table entry: ")
-        print(table_entry)
-        print(rules_fields)
-        print("\n")
-
-        # switch.WriteTableEntry(table_entry)
-
-# Pares a table entry and saves the meaningful fields to a dict
+        switch.WriteTableEntry(table_entry)
+        
+# Parses a table entry from the rule compiler list and saves the meaningful fields to a dict
 def get_rule_fields(rule):
     rule_fields = {}
     rule_items = rule.split(" ")
@@ -190,25 +172,48 @@ def get_rule_fields(rule):
     rule_fields["dstPortLower"] = rule_items[7].split("->")[0]
     rule_fields["dstPortUpper"] = rule_items[7].split("->")[1]
 
-    rule_fields["flags"] = rule_items[8].split("&&&")[0]
-    rule_fields["flagsMask"] = rule_items[8].split("&&&")[1]
+    rule_fields["flags"] = rule_items[8]
 
     rule_fields["new_port"] = rule_items[10]
     rule_fields["priority"] = rule_items[11]
 
+
     return rule_fields
 
+# Don't add table matches with "don't care values", including 0.0.0.0 IPs and 0->65535 port ranges
+def build_match_fields(rule_fields, ip_version=4):
+    field_name = "protocol"
+    if ip_version == 6:
+        field_name = "nextHeader"
 
+    match_fields = {}
+    match_fields[f"hdr.ip.v{ip_version}.{field_name}"] = int(rule_fields["protocol"], base=16)
+    if rule_fields["srcAddr"] != "0.0.0.0":
+        match_fields[f"hdr.ip.v{ip_version}.srcAddr"] = (rule_fields["srcAddr"], rule_fields["srcMask"])
 
-def readTableRules(p4info_helper, sw):
+    if rule_fields["srcPortLower"] != "0" or rule_fields["srcPortUpper"] != "65535":
+       match_fields["meta.srcPort"] = (int(rule_fields["srcPortLower"]), int(rule_fields["srcPortUpper"]))
+
+    if rule_fields["dstAddr"] != "0.0.0.0":
+        match_fields[f"hdr.ip.v{ip_version}.dstAddr"] = (rule_fields["dstAddr"], rule_fields["dstMask"])
+
+    if rule_fields["dstPortLower"] != "0" or rule_fields["dstPortUpper"] != "65535":
+       match_fields["meta.dstPort"] = (int(rule_fields["dstPortLower"]), int(rule_fields["dstPortUpper"]))
+
+    match_fields["meta.flags"] = int(rule_fields["flags"], 2)
+
+    return match_fields
+    
+
+def readTableRules(p4info_helper, switch):
     """
     Reads the table entries from all tables on the switch.
 
     :param p4info_helper: the P4Info helper
     :param sw: the switch connection
     """
-    print('\n----- Reading tables rules for %s -----' % sw.name)
-    for response in sw.ReadTableEntries():
+    print('\n----- Reading tables rules for %s -----' % switch.name)
+    for response in switch.ReadTableEntries():
         for entity in response.entities:
             entry = entity.table_entry
             table_name = p4info_helper.get_tables_name(entry.table_id)
@@ -223,13 +228,14 @@ def readTableRules(p4info_helper, sw):
                 print(p4info_helper.get_action_param_name(action_name, p.param_id), end=' ')
                 print('%r' % p.value, end=' ')
             print()
+            exit()
 
-def printGrpcError(e):
-    print("gRPC Error:", e.details(), end=' ')
-    status_code = e.code()
-    print("(%s)" % status_code.name, end=' ')
-    traceback = sys.exc_info()[2]
-    print("[%s:%d]" % (traceback.tb_frame.f_code.co_filename, traceback.tb_lineno))
+# def printGrpcError(e):
+#     print("gRPC Error:", e.details(), end=' ')
+#     status_code = e.code()
+#     print("(%s)" % status_code.name, end=' ')
+#     traceback = sys.exc_info()[2]
+#     print("[%s:%d]" % (traceback.tb_frame.f_code.co_filename, traceback.tb_lineno))
 
 if __name__ == '__main__':
     args = parse_args()
