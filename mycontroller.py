@@ -71,14 +71,15 @@ def main(args):
             # Writes for each switch its rules
             write_rules(p4info_helper, switch, rules)   
 
-
-        for switch_id, switch_connection in switches.items():
-            readTableRules(p4info_helper, switch_connection)
-        # readTableRules(p4info_helper, s2)
+            write_basic_ipv4_rules(p4info_helper, switch)
 
         while True:
-            sleep(2)
             print('\n----- Reading table entries -----')
+            for switch_id, switch_connection in switches.items():
+                readTableRules(p4info_helper, switch_connection)
+            sleep(10)
+            os.system('cls||clear')
+
             
     except KeyboardInterrupt:
         print(" Shutting down.")
@@ -213,8 +214,11 @@ def readTableRules(p4info_helper, switch):
     :param sw: the switch connection
     """
     print('\n----- Reading tables rules for %s -----' % switch.name)
+    count = 0
     for response in switch.ReadTableEntries():
         for entity in response.entities:
+            if(count > 10):
+                return
             entry = entity.table_entry
             table_name = p4info_helper.get_tables_name(entry.table_id)
             print('%s: ' % table_name, end=' ')
@@ -228,14 +232,7 @@ def readTableRules(p4info_helper, switch):
                 print(p4info_helper.get_action_param_name(action_name, p.param_id), end=' ')
                 print('%r' % p.value, end=' ')
             print()
-            exit()
-
-# def printGrpcError(e):
-#     print("gRPC Error:", e.details(), end=' ')
-#     status_code = e.code()
-#     print("(%s)" % status_code.name, end=' ')
-#     traceback = sys.exc_info()[2]
-#     print("[%s:%d]" % (traceback.tb_frame.f_code.co_filename, traceback.tb_lineno))
+            count+=1
 
 if __name__ == '__main__':
     args = parse_args()

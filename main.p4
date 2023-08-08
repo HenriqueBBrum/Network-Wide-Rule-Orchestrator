@@ -6,24 +6,24 @@
 
 
 void get_ports(inout headers hdr, inout metadata meta){
-    if(hdr.ip_encap_protocol.icmp.isValid()){
+    if(hdr.ip_encapsulated_proto.icmp.isValid()){
         meta.srcPort = 0;
         meta.dstPort = 0;
         meta.flags = 0;
-    }else if(hdr.ip_encap_protocol.tcp.isValid()){
-        meta.srcPort = hdr.ip_encap_protocol.tcp.srcPort;
-        meta.dstPort = hdr.ip_encap_protocol.tcp.dstPort;
-        meta.flags = hdr.ip_encap_protocol.tcp.flags;
-    }else if(hdr.ip_encap_protocol.udp.isValid()){
-        meta.srcPort = hdr.ip_encap_protocol.udp.srcPort;
-        meta.dstPort = hdr.ip_encap_protocol.udp.dstPort;
+    }else if(hdr.ip_encapsulated_proto.tcp.isValid()){
+        meta.srcPort = hdr.ip_encapsulated_proto.tcp.srcPort;
+        meta.dstPort = hdr.ip_encapsulated_proto.tcp.dstPort;
+        meta.flags = hdr.ip_encapsulated_proto.tcp.flags;
+    }else if(hdr.ip_encapsulated_proto.udp.isValid()){
+        meta.srcPort = hdr.ip_encapsulated_proto.udp.srcPort;
+        meta.dstPort = hdr.ip_encapsulated_proto.udp.dstPort;
         meta.flags = 0;
     }
 }
 
 
 control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadata_t standard_metadata){
-    // Counters for stats
+    // Statistics counters
     counter(64, CounterType.packets) received;
     counter(64, CounterType.packets) redirected;
     counter(64, CounterType.packets) ids_flow;
@@ -31,16 +31,17 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     direct_counter(CounterType.packets_and_bytes) ipv4_ids_table_hit_counter;
     direct_counter(CounterType.packets_and_bytes) ipv6_ids_table_hit_counter;
 
-    // Registers for bloom filter
-    register<bit<1>>(255) bf_new_flows1;
-    register<bit<1>>(255) bf_new_flows2;
-    register<bit<1>>(255) bf_new_flows3;
-    register<bit<1>>(255) bf_new_flows4;
-    // Registers for count-min sketch
+    // Registers for the count-min sketch
     register<bit<8>>(255) cm_limiter1;
     register<bit<8>>(255) cm_limiter2;
     register<bit<8>>(255) cm_limiter3;
     register<bit<8>>(255) cm_limiter4;
+
+    // Registers for the bloom filter
+    register<bit<1>>(255) bf_new_flows1;
+    register<bit<1>>(255) bf_new_flows2;
+    register<bit<1>>(255) bf_new_flows3;
+    register<bit<1>>(255) bf_new_flows4;
 
     // Variables used in ids fowarding logic
     bit<8> current_min = 0;
@@ -51,7 +52,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     register<bit<48>>(1) timeout_aux;
 
 
-    /**** Tables ****/
+    /**** Actions ****/
 
     action pass(bit<9> port) {
         meta.ids_table_match = false;
@@ -62,6 +63,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         meta.ids_table_match = true;
         standard_metadata.egress_spec = port;
     }
+
+    /**** Tables ****/
 
     table ipv4_ids {
         actions = {
@@ -78,10 +81,9 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
            meta.flags: exact;
         }
         size = 10240;
-        default_action = pass(PASS_PORT);
+        default_action = pass(IDS_TABLE_DEFAULT_PORT);
         counters = ipv4_ids_table_hit_counter;
     }
-
 
     table ipv6_ids{
         actions = {
@@ -98,12 +100,13 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
            meta.flags: exact;
         }
         size = 10240;
-        default_action = pass(PASS_PORT);
+        default_action = pass(IDS_TABLE_DEFAULT_PORT);
         counters = ipv6_ids_table_hit_counter;
     }
 
     /**** Independent actions ****/
-    
+
+    //
     action increment_cm_limiter(bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port, bit<8> protocol) {
         bit<8> flow_hash1;
         bit<8> flow_hash2;
@@ -134,6 +137,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         cm_limiter4.write((bit<32>)flow_hash4, aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS);
     }
 
+    //
     action read_cm_limiter(bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port, bit<8> protocol) {
         bit<8> flow_hash1;
         bit<8> flow_hash2;
@@ -161,6 +165,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         log_msg("cm_limiter minimum value {}", {current_min});
     }
 
+    // 
     action track_ongoing_flows(bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port, bit<8> protocol) {
         bit<8> flow_hash1;
         bit<8> flow_hash2;
@@ -178,7 +183,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         bf_new_flows4.write((bit<32>) flow_hash4, 1);
     }
 
-    // Check if this is correct
+    // !!!!!!!!!!!!!!!!!!!!!! Check if this is correct
     action age_bloomfilter() {
         bit<1> has_usage;
         bit<8> current_value;
@@ -201,7 +206,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         received.count((bit<32>) standard_metadata.ingress_port);
         forward_to_ids = false;
 
-        standard_metadata.egress_spec = PASS_PORT;
+        standard_metadata.egress_spec = IDS_TABLE_DEFAULT_PORT;
 
         if (hdr.ip.v4.isValid() || hdr.ip.v6.isValid()){
             bit<128> src_IP = 0;
@@ -219,34 +224,38 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
             }
 
             get_ports(hdr, meta);
-
             read_cm_limiter(src_IP, dst_IP, meta.srcPort, meta.dstPort, protocol);
             
-            // if is not ids listed
+            // If this flow ID is not in Count-min Sketch, meaning it is an unknown flow
             if(current_min == 0){
-                // check if ids listed is needed
+                // Checks if IDS listed is needed
                 if (hdr.ip.v4.isValid()){
                    ipv4_ids.apply();
                 }else if(hdr.ip.v6.isValid()){
                    ipv6_ids.apply();
                 }
-
+                // If packet matches a rule, send it to IDS for further processing
                 if(meta.ids_table_match){
                     ids_flow.count((bit<32>) 1);
                     forward_to_ids = true;
                 }
-            }else if(current_min < MAX_PACKETS){ // Already ids listed to be forwarded
+            // This flow is already present at the Count-min Sketch but it's still needed to foward some of the flow's packets to the IDS
+            }else if(current_min < MAX_PACKETS){ 
                 forward_to_ids = true;
+            // This flow is already present at the Count-min Sketch and it's not needed to foward packets from this flow to the IDS
             }else if(current_min >= MAX_PACKETS){
                 log_msg("Limit reached");
                 forward_to_ids = false;
             }
 
+            // Updates the Count-min Sketch value for this flow and updates the Bloom-fitler to account for the existence of this flow 
             if(forward_to_ids){
                 increment_cm_limiter(src_IP, dst_IP, meta.srcPort, meta.dstPort, protocol);
                 track_ongoing_flows(src_IP, dst_IP, meta.srcPort, meta.dstPort, protocol);
             }
 
+            // Ages the bloomfilter and zero entries that have being inactive for more than a ceratin time
+            // !!!!!!!!!!!!!! Review if this code is working
             timeout_aux.read(last_timestamp, 0);
             bit<48> time_diff = standard_metadata.ingress_global_timestamp - last_timestamp;
             if (time_diff > ONE_SECOND * 10) {

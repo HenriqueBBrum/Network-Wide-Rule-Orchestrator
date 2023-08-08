@@ -36,18 +36,18 @@ parser MyParser(packet_in packet,
     }
 
     state parse_icmp {
-        packet.extract(hdr.ip_encap_protocol.icmp);
+        packet.extract(hdr.ip_encapsulated_proto.icmp);
         transition accept;
     }
 
 
     state parse_tcp {
-        packet.extract(hdr.ip_encap_protocol.tcp);
+        packet.extract(hdr.ip_encapsulated_proto.tcp);
         transition accept;
     }
 
     state parse_udp {
-        packet.extract(hdr.ip_encap_protocol.udp);
+        packet.extract(hdr.ip_encapsulated_proto.udp);
         transition accept;
     }
 }
@@ -56,7 +56,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ip);
-        packet.emit(hdr.ip_encap_protocol);
+        packet.emit(hdr.ip_encapsulated_proto);
     }
 }
 

@@ -1,19 +1,19 @@
 const bit<48> ONE_SECOND = 1000000;
 const bit<8> MAX_PACKETS = 20;
-const bit<9> PASS_PORT = 2;
+const bit<9> IDS_TABLE_DEFAULT_PORT = 2;
 
 
-// Ethernet
+// Ethernet  EtherType field useful values
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<16> TYPE_IPV6 = 0x86DD;
 const bit<16> TYPE_ALERT = 0x2345;
 
-// IP 
+// IP Protocol (nextHeader) field useful values
 const bit<8> TYPE_ICMP = 0x01; 
 const bit<8> TYPE_TCP = 0x06;
 const bit<8> TYPE_UDP = 0x11;
 
-
+// General typedef
 typedef bit<9>  egressSpec_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
@@ -53,11 +53,11 @@ header ipv6_t {
     ip6Addr_t dstAddr;
 }
 
+// Header can have either IPv4 or IPv6
 header_union ip_t {
   ipv4_t v4;
   ipv6_t v6;
 }
-
 
 header icmp_t {
     bit<8>  type;
@@ -85,26 +85,28 @@ header tcp_t {
     bit<16> urgentPtr;
 }
 
-header_union ip_encap_protocol_t{
+// Header can have UDP, TCP or ICMP 
+header_union ip_encapsulated_proto_t{
     udp_t  udp;
     tcp_t  tcp;
     icmp_t icmp;
 }
 
-struct ingress_metadata_t {
-    bit<32> nhop_ipv4;
-}
 
 struct metadata {
+    // Identifies if it is an IDS table match
     bool ids_table_match;
+
+    //  Key fields used by the IDS_TABLE since you can UDP, TCP and ICMP as IP encapsulation protocols
     bit<16> srcPort;
     bit<16> dstPort;
     bit<8> flags;
-    ingress_metadata_t   ingress_metadata;
+
 }
+
 
 struct headers {
     ethernet_t ethernet;
     ip_t    ip;
-    ip_encap_protocol_t ip_encap_protocol;
+    ip_encapsulated_proto_t ip_encapsulated_proto;
 }
