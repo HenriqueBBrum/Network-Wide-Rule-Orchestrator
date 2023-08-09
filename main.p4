@@ -5,23 +5,6 @@
 #include "include/parser.p4"
 
 
-void get_ports(inout headers hdr, inout metadata meta){
-    if(hdr.ip_encapsulated_proto.icmp.isValid()){
-        meta.srcPort = 0;
-        meta.dstPort = 0;
-        meta.flags = 0;
-    }else if(hdr.ip_encapsulated_proto.tcp.isValid()){
-        meta.srcPort = hdr.ip_encapsulated_proto.tcp.srcPort;
-        meta.dstPort = hdr.ip_encapsulated_proto.tcp.dstPort;
-        meta.flags = hdr.ip_encapsulated_proto.tcp.flags;
-    }else if(hdr.ip_encapsulated_proto.udp.isValid()){
-        meta.srcPort = hdr.ip_encapsulated_proto.udp.srcPort;
-        meta.dstPort = hdr.ip_encapsulated_proto.udp.dstPort;
-        meta.flags = 0;
-    }
-}
-
-
 control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadata_t standard_metadata){
     // Statistics counters
     counter(64, CounterType.packets) received;
@@ -54,14 +37,14 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
     /**** Actions ****/
 
-    action pass(bit<9> port) {
+    action pass() {
         meta.ids_table_match = false;
-        standard_metadata.egress_spec = port;
+        standard_metadata.egress_spec = IDS_TABLE_DEFAULT_PORT;
     }
 
-    action redirect(bit<9> port) {
+    action redirect() {
         meta.ids_table_match = true;
-        standard_metadata.egress_spec = port;
+        standard_metadata.egress_spec = IDS_TABLE_REDIRECT_PORT;
     }
 
     /**** Tables ****/
@@ -81,7 +64,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
            meta.flags: exact;
         }
         size = 10240;
-        default_action = pass(IDS_TABLE_DEFAULT_PORT);
+        default_action = pass();
         counters = ipv4_ids_table_hit_counter;
     }
 
@@ -100,13 +83,30 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
            meta.flags: exact;
         }
         size = 10240;
-        default_action = pass(IDS_TABLE_DEFAULT_PORT);
+        default_action = pass();
         counters = ipv6_ids_table_hit_counter;
     }
 
     /**** Independent actions ****/
 
-    //
+
+    action get_ports(){
+        if(hdr.ip_encapsulated_proto.icmp.isValid()){
+            meta.srcPort = 0;
+            meta.dstPort = 0;
+            meta.flags = 0;
+        }else if(hdr.ip_encapsulated_proto.tcp.isValid()){
+            meta.srcPort = hdr.ip_encapsulated_proto.tcp.srcPort;
+            meta.dstPort = hdr.ip_encapsulated_proto.tcp.dstPort;
+            meta.flags = hdr.ip_encapsulated_proto.tcp.flags;
+        }else if(hdr.ip_encapsulated_proto.udp.isValid()){
+            meta.srcPort = hdr.ip_encapsulated_proto.udp.srcPort;
+            meta.dstPort = hdr.ip_encapsulated_proto.udp.dstPort;
+            meta.flags = 0;
+        }
+    }
+
+    // Updates the entries for a flow in the count-min sketch if a new packet from the flow has arrived
     action increment_cm_limiter(bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port, bit<8> protocol) {
         bit<8> flow_hash1;
         bit<8> flow_hash2;
@@ -137,7 +137,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         cm_limiter4.write((bit<32>)flow_hash4, aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS);
     }
 
-    //
+    // Reads the count-min sketch and returns the min count found in all four rows
     action read_cm_limiter(bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port, bit<8> protocol) {
         bit<8> flow_hash1;
         bit<8> flow_hash2;
@@ -165,7 +165,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         log_msg("cm_limiter minimum value {}", {current_min});
     }
 
-    // 
+    // Marks the bloom filter positions correspoding to the flow five-tuple hash. Meaning this flow is an ongoing flow
     action track_ongoing_flows(bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port, bit<8> protocol) {
         bit<8> flow_hash1;
         bit<8> flow_hash2;
@@ -183,7 +183,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         bf_new_flows4.write((bit<32>) flow_hash4, 1);
     }
 
-    // !!!!!!!!!!!!!!!!!!!!!! Check if this is correct
+    // Removes idle entries in the bloomfliter 
+    // !!!!!!!!!!!!!!!!!!!!!! Check if this is correct .. It is not correct as it only clears poistioin 0 through 3
     action age_bloomfilter() {
         bit<1> has_usage;
         bit<8> current_value;
@@ -223,18 +224,18 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
                 protocol = hdr.ip.v6.nextHeader;
             }
 
-            get_ports(hdr, meta);
+            get_ports();
             read_cm_limiter(src_IP, dst_IP, meta.srcPort, meta.dstPort, protocol);
             
             // If this flow ID is not in Count-min Sketch, meaning it is an unknown flow
             if(current_min == 0){
-                // Checks if IDS listed is needed
+                // Checks if packet match an IDS rule and determines the approriate egress port
                 if (hdr.ip.v4.isValid()){
                    ipv4_ids.apply();
                 }else if(hdr.ip.v6.isValid()){
                    ipv6_ids.apply();
                 }
-                // If packet matches a rule, send it to IDS for further processing
+                // If packet matches a rule, updates the count-min sketch and the bloom filter
                 if(meta.ids_table_match){
                     ids_flow.count((bit<32>) 1);
                     forward_to_ids = true;
@@ -242,6 +243,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
             // This flow is already present at the Count-min Sketch but it's still needed to foward some of the flow's packets to the IDS
             }else if(current_min < MAX_PACKETS){ 
                 forward_to_ids = true;
+                standard_metadata.egress_spec = IDS_TABLE_REDIRECT_PORT;
+
             // This flow is already present at the Count-min Sketch and it's not needed to foward packets from this flow to the IDS
             }else if(current_min >= MAX_PACKETS){
                 log_msg("Limit reached");

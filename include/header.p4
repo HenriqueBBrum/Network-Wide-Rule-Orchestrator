@@ -1,6 +1,8 @@
 const bit<48> ONE_SECOND = 1000000;
 const bit<8> MAX_PACKETS = 20;
-const bit<9> IDS_TABLE_DEFAULT_PORT = 2;
+const bit<9> IDS_TABLE_DEFAULT_PORT = 1; // PORT TO FOWARD PACKET
+const bit<9> IDS_TABLE_REDIRECT_PORT = 2; // PORT TO REDIRECT PACKETS TO SNORT
+
 
 
 // Ethernet  EtherType field useful values
@@ -92,6 +94,9 @@ header_union ip_encapsulated_proto_t{
     icmp_t icmp;
 }
 
+struct ingress_metadata_t {
+    bit<32> nhop_ipv4;
+}
 
 struct metadata {
     // Identifies if it is an IDS table match
@@ -102,6 +107,7 @@ struct metadata {
     bit<16> dstPort;
     bit<8> flags;
 
+    ingress_metadata_t   ingress_metadata;
 }
 
 

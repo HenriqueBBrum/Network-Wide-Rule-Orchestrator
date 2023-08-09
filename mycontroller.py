@@ -71,8 +71,6 @@ def main(args):
             # Writes for each switch its rules
             write_rules(p4info_helper, switch, rules)   
 
-            write_basic_ipv4_rules(p4info_helper, switch)
-
         while True:
             print('\n----- Reading table entries -----')
             for switch_id, switch_connection in switches.items():
@@ -136,20 +134,14 @@ def write_rules(p4info_helper, switch, rules):
                 table_name="MyIngress.ipv4_ids",
                 priority=int(rule_fields["priority"]),
                 match_fields=match_fields,
-                action_name="MyIngress."+rule_fields["action"],
-                action_params={
-                    "port": int(rule_fields["new_port"]),
-                })
+                action_name="MyIngress."+rule_fields["action"])
         else:
             match_fields = build_match_fields(rule_fields, 6)
             table_entry = p4info_helper.buildTableEntry(
                 table_name="MyIngress.ipv6_ids",
                 priority=int(rule_fields["priority"]),
                 match_fields=match_fields,
-                action_name="MyIngress."+rule_fields["action"],
-                action_params={
-                    "port": int(rule_fields["new_port"]),
-                })
+                action_name="MyIngress."+rule_fields["action"])
         switch.WriteTableEntry(table_entry)
         
 # Parses a table entry from the rule compiler list and saves the meaningful fields to a dict
@@ -175,9 +167,7 @@ def get_rule_fields(rule):
 
     rule_fields["flags"] = rule_items[8]
 
-    rule_fields["new_port"] = rule_items[10]
-    rule_fields["priority"] = rule_items[11]
-
+    rule_fields["priority"] = rule_items[10]
 
     return rule_fields
 
