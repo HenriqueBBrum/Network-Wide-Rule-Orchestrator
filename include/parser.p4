@@ -8,6 +8,12 @@ parser MyParser(packet_in packet,
 
     state parse_ethernet {
         packet.extract(hdr.ethernet);
+
+        meta.protocol = hdr.ethernet.etherType;
+        meta.srcPort = 0;
+        meta.dstPort = 0;
+        meta.flags = 0;
+
         transition select(hdr.ethernet.etherType){
             TYPE_IPV4: parse_ipv4;
             TYPE_IPV6: parse_ipv6;
@@ -17,6 +23,7 @@ parser MyParser(packet_in packet,
 
     state parse_ipv4 {
         packet.extract(hdr.ip.v4);
+        meta.protocol = (bit<16>)hdr.ip.v4.protocol;
         transition select(hdr.ip.v4.protocol){
             TYPE_ICMP: parse_icmp;
             TYPE_TCP:  parse_tcp;
@@ -27,6 +34,7 @@ parser MyParser(packet_in packet,
 
     state parse_ipv6 {
         packet.extract(hdr.ip.v6);
+        meta.protocol = (bit<16>)hdr.ip.v6.nextHeader;
         transition select(hdr.ip.v6.nextHeader){
             TYPE_ICMP: parse_icmp;
             TYPE_TCP:  parse_tcp;
@@ -43,11 +51,17 @@ parser MyParser(packet_in packet,
 
     state parse_tcp {
         packet.extract(hdr.ip_encapsulated_proto.tcp);
+        meta.srcPort = hdr.ip_encapsulated_proto.tcp.srcPort;
+        meta.dstPort = hdr.ip_encapsulated_proto.tcp.dstPort;
+        meta.flags = hdr.ip_encapsulated_proto.tcp.flags;
         transition accept;
     }
 
     state parse_udp {
         packet.extract(hdr.ip_encapsulated_proto.udp);
+        meta.srcPort = hdr.ip_encapsulated_proto.udp.srcPort;
+        meta.dstPort = hdr.ip_encapsulated_proto.udp.dstPort;
+        meta.flags = 0;
         transition accept;
     }
 }

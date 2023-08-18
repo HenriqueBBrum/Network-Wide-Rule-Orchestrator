@@ -102,11 +102,12 @@ struct metadata {
     // Identifies if it is an IDS table match
     bool ids_table_match;
 
-    //  Key fields used by the IDS_TABLE since you can UDP, TCP and ICMP as IP encapsulation protocols
+    //  Key fields used by the IDS_TABLE since you can have UDP, TCP and ICMP as IP encapsulation protocols
     bit<16> srcPort;
     bit<16> dstPort;
     bit<8> flags;
 
+    bit<16> protocol;
     ingress_metadata_t   ingress_metadata;
 }
 
