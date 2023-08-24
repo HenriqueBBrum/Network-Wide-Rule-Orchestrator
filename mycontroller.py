@@ -172,12 +172,8 @@ def get_rule_fields(rule):
 
 # Don't add table matches with "don't care values", including 0.0.0.0 IPs and 0->65535 port ranges
 def build_match_fields(rule_fields, ip_version=4):
-    field_name = "protocol"
-    if ip_version == 6:
-        field_name = "nextHeader"
-
     match_fields = {}
-    match_fields[f"hdr.ip.v{ip_version}.{field_name}"] = int(rule_fields["protocol"], base=16)
+    match_fields["meta.protocol"] = int(rule_fields["protocol"], base=16)
     if rule_fields["srcAddr"] != "0.0.0.0":
         match_fields[f"hdr.ip.v{ip_version}.srcAddr"] = (rule_fields["srcAddr"], rule_fields["srcMask"])
 

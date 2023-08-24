@@ -18,6 +18,8 @@ def main():
                 IP(dst="10.0.2.2")/UDP(sport=udp_port,dport=udp_port)/Raw(RandString(size=100))
 
     sendpfast(pkt, pps=1, loop=15)
+    sendpfast(pkt, pps=1, loop=15)
+
 
 
 if __name__ == '__main__':
