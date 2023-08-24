@@ -1,7 +1,18 @@
+#define PKT_INSTANCE_TYPE_NORMAL 0
+#define PKT_INSTANCE_TYPE_INGRESS_CLONE 1
+#define PKT_INSTANCE_TYPE_EGRESS_CLONE 2
+#define PKT_INSTANCE_TYPE_COALESCED 3
+#define PKT_INSTANCE_TYPE_INGRESS_RECIRC 4
+#define PKT_INSTANCE_TYPE_REPLICATION 5
+#define PKT_INSTANCE_TYPE_RESUBMIT 6
+
+
+#define REPORT_MIRROR_SESSION_ID 500 // Session for mirrored packets
+
 const bit<48> ONE_SECOND = 1000000;
 const bit<8> MAX_PACKETS = 20;
-const bit<9> IDS_TABLE_DEFAULT_PORT = 1; // PORT TO FOWARD PACKET
-const bit<9> IDS_TABLE_REDIRECT_PORT = 2; // PORT TO REDIRECT PACKETS TO SNORT
+const bit<9> DEFAULT_PORT = 1; // PORT TO FOWARD PACKET
+const bit<9> PORT_TO_IDS = 2; // PORT TO REDIRECT PACKETS TO SNORT
 
 
 
@@ -99,8 +110,8 @@ struct ingress_metadata_t {
 }
 
 struct metadata {
-    // Identifies if it is an IDS table match
-    bool ids_table_match;
+    // Identifies if a clone of this packet should be sent to the IDS
+    bool clone_packet_to_ids;
 
     //  Key fields used by the IDS_TABLE since you can have UDP, TCP and ICMP as IP encapsulation protocols
     bit<16> srcPort;
@@ -108,6 +119,9 @@ struct metadata {
     bit<8> flags;
 
     bit<16> protocol;
+
+
+    // !!! Removing this line causes some erros
     ingress_metadata_t   ingress_metadata;
 }
 
