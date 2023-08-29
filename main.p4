@@ -107,7 +107,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
 
      // Reads the count-min sketch and returns the min count found in all four rows
-    action read_cm_limiter(bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port, bit<16> protocol) {
+    action read_cm_limiter(bit<16> protocol, bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port) {
         bit<32> flow_hash1;
         bit<32> flow_hash2;
         bit<32> flow_hash3;
@@ -137,7 +137,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
 
     // Updates the entries for a flow in the count-min sketch if a new packet from the flow has arrived
-    action increment_cm_limiter(bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port, bit<16> protocol) {
+    action increment_cm_limiter(bit<16> protocol, bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port) {
         bit<32> flow_hash1;
         bit<32> flow_hash2;
         bit<32> flow_hash3;
@@ -213,8 +213,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
             }
 
             if(meta.ids_table_match){
-                increment_cm_limiter(src_IP, dst_IP, meta.srcPort, meta.dstPort, meta.protocol);
-                read_cm_limiter(src_IP, dst_IP, meta.srcPort, meta.dstPort, meta.protocol);
+                increment_cm_limiter(meta.protocol, src_IP, dst_IP, meta.srcPort, meta.dstPort);
+                read_cm_limiter(meta.protocol, src_IP, dst_IP, meta.srcPort, meta.dstPort);
                 // If this flow ID is not in Count-min Sketch, meaning it is an unknown flow
                 if(current_min == 1){
                     ids_flow.count((bit<32>) 1);

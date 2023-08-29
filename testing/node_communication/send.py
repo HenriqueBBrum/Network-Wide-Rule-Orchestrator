@@ -14,12 +14,16 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def main():
     udp_port = 50000
-    pkt = Ether(dst='ff:ff:ff:ff:ff:ff', src=get_if_hwaddr('eth0')) / \
+    pkt1 = Ether(dst='ff:ff:ff:ff:ff:ff', src=get_if_hwaddr('eth0')) / \
                 IP(dst="10.0.2.2")/UDP(sport=udp_port,dport=udp_port)/Raw(RandString(size=100))
 
-    sendpfast(pkt, pps=1, loop=10)
+    udp_port = 50001
+    pkt2 = Ether(dst='ff:ff:ff:ff:ff:ff', src=get_if_hwaddr('eth0')) / \
+                IP(dst="10.0.2.2")/UDP(sport=udp_port,dport=udp_port)/Raw(RandString(size=100))
+
+    sendpfast(pkt1, pps=1, loop=10)
     input()
-    sendpfast(pkt, pps=1, loop=10)
+    sendpfast(pkt2, pps=1, loop=10)
 
 
 
