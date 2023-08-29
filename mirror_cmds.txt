@@ -1,1 +1,1 @@
-mirroring_add 500 10
+mirroring_add 500 2

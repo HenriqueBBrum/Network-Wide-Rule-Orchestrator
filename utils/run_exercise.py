@@ -94,6 +94,7 @@ class ExerciseTopo(Topo):
 
             self.addSwitch(sw, log_file="%s/%s.log" %(log_dir, sw), cls=switchClass)
 
+
         for link in host_links:
             host_name = link['node1']
             sw_name, sw_port = self.parse_switch_node(link['node2'])
@@ -194,6 +195,7 @@ class ExerciseRunner:
         """
         # Initialize mininet with the topology specified by the config
         self.create_network()
+
         self.net.start()
         sleep(1)
 
@@ -258,6 +260,7 @@ class ExerciseRunner:
                       host = P4Host,
                       switch = defaultSwitchClass,
                       controller = None)
+
 
     def program_switch_p4runtime(self, sw_name, sw_dict):
         """ This method will use P4Runtime to program the switch using the

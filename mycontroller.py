@@ -71,11 +71,12 @@ def main(args):
             write_rules(p4info_helper, switch, rules)   
 
         while True:
-            print('\n----- Reading table entries -----')
-            for switch_id, switch_connection in switches.items():
-                readTableRules(p4info_helper, switch_connection)
-            sleep(10)
-            os.system('cls||clear')
+            # print('\n----- Reading table entries -----')
+            # for switch_id, switch_connection in switches.items():
+            #     readTableRules(p4info_helper, switch_connection)
+            # sleep(10)
+            # os.system('cls||clear')
+            sleep(100)
 
             
     except KeyboardInterrupt:

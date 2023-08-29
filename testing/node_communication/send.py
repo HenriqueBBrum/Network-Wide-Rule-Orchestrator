@@ -17,8 +17,9 @@ def main():
     pkt = Ether(dst='ff:ff:ff:ff:ff:ff', src=get_if_hwaddr('eth0')) / \
                 IP(dst="10.0.2.2")/UDP(sport=udp_port,dport=udp_port)/Raw(RandString(size=100))
 
-    sendpfast(pkt, pps=1, loop=15)
-    sendpfast(pkt, pps=1, loop=15)
+    sendpfast(pkt, pps=1, loop=10)
+    input()
+    sendpfast(pkt, pps=1, loop=10)
 
 
 

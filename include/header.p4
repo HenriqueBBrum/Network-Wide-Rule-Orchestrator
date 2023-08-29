@@ -10,9 +10,9 @@
 #define REPORT_MIRROR_SESSION_ID 500 // Session for mirrored packets
 
 const bit<48> ONE_SECOND = 1000000;
-const bit<8> MAX_PACKETS = 20;
-const bit<9> DEFAULT_PORT = 1; // PORT TO FOWARD PACKET
-const bit<9> PORT_TO_IDS = 2; // PORT TO REDIRECT PACKETS TO SNORT
+const bit<8> MAX_PACKETS = 5;
+const bit<9> DEFAULT_PORT = 1; // PORT TO FOWARD PACKETS
+const bit<9> PORT_TO_IDS = 10; // PORT TO REDIRECT PACKETS TO SNORT
 
 
 
@@ -111,7 +111,7 @@ struct ingress_metadata_t {
 
 struct metadata {
     // Identifies if a clone of this packet should be sent to the IDS
-    bool clone_packet_to_ids;
+    bool ids_table_match;
 
     //  Key fields used by the IDS_TABLE since you can have UDP, TCP and ICMP as IP encapsulation protocols
     bit<16> srcPort;
@@ -121,7 +121,7 @@ struct metadata {
     bit<16> protocol;
 
 
-    // !!! Removing this line causes some erros
+    // !!! Removing this line causes some errors
     ingress_metadata_t   ingress_metadata;
 }
 
