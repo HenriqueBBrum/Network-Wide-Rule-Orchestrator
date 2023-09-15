@@ -13,7 +13,6 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     direct_counter(CounterType.packets_and_bytes) ipv4_ids_table_hit_counter;
     direct_counter(CounterType.packets_and_bytes) ipv6_ids_table_hit_counter;
 
-    // 
     // Registers for the count-min sketch
     register<bit<8>>(4) cm_limiter1;
     register<bit<8>>(4) cm_limiter2;
