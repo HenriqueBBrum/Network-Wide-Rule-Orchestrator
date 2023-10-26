@@ -12,7 +12,7 @@
 const bit<48> ONE_SECOND = 1000000;
 const bit<8> MAX_PACKETS = 5;
 const bit<9> DEFAULT_PORT = 3; // PORT TO FOWARD PACKETS
-const bit<9> PORT_TO_IDS = 10; // PORT TO REDIRECT PACKETS TO SNORT
+const bit<9> PORT_TO_IDS = 2; // PORT TO REDIRECT PACKETS TO SNORT
 
 
 
@@ -119,7 +119,6 @@ struct metadata {
     bit<8> flags;
 
     bit<16> protocol;
-
 
     // !!! Removing this line causes some errors
     ingress_metadata_t   ingress_metadata;

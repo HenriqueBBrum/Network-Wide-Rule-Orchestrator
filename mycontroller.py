@@ -115,7 +115,7 @@ def distribute_rules(network_info, rules, strategy):
         network.add_edge(link[0], link[1], weight=network.nodes[link[0]]["free_table_entries"])
         network.add_edge(link[1], link[0], weight=network.nodes[link[1]]["free_table_entries"])
     
-    # Calculates the least safe path lenght and determine the subset of rules for "node"
+    # Calculates the least safe path length and determine the subset of rules for "node"
     for node in not_initial_nodes:
         l = nx.shortest_path_length(network, source="start", target=node, weight="weight")
         end = len(rules) if network_info["switches"][node]["free_table_entries"] > len(rules) else network_info["switches"][node]["free_table_entries"]
