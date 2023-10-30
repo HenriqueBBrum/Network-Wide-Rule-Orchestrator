@@ -1,0 +1,24 @@
+{
+    "hosts": ["hinternet","h2","h3", "hsnort"],
+    "switches": {
+        "s1": {
+            "free_table_entries" : 500,
+            "hops_from_internet" : 0,
+            "hops_from_host" : 2
+        },
+        "s2": {
+            "free_table_entries" : 400,
+            "hops_from_internet" : 1,
+            "hops_from_host" : 1
+        },
+        "s3": {
+            "free_table_entries" : 300,
+            "hops_from_internet" : 2,
+            "hops_from_host" : 0
+        }
+    },
+    "links": [
+        ["hinternet", "s1"], ["s1", "s2"], ["s2", "s3"], ["h2", "s3"], ["h3", "s3"],
+        ["hsnort", "s1"], ["hsnort", "s2"], ["hsnort", "s3"]
+    ]
+}
