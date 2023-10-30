@@ -28,7 +28,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     register<bit<16>>(1) global_window_tracker;
 
     // Variables used in IDS fowarding logic
-    bit<8> current_min = 0;
+    bit<10> current_min = 0;
 
     // Variables for flow expiring mechanism
     bit<48> last_timestamp = 0;
@@ -151,7 +151,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         bit<16> global_window_id = 0;
         global_window_tracker.read(global_window_id, 0);
 
-        bit<8> aux_counter;
+        bit<10> aux_counter;
         bit<16> aux_window_id_tracker;
 
         // Update count min row 1
