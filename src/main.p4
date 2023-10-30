@@ -14,16 +14,16 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     direct_counter(CounterType.packets_and_bytes) ipv6_ids_table_hit_counter;
 
     // Registers for the count-min sketch
-    register<bit<8>>(4) cm_limiter1;
-    register<bit<8>>(4) cm_limiter2;
-    register<bit<8>>(4) cm_limiter3;
-    register<bit<8>>(4) cm_limiter4;
+    register<bit<10>>(COUNT_MIN_SIZE) cm_limiter1;
+    register<bit<10>>(COUNT_MIN_SIZE) cm_limiter2;
+    register<bit<10>>(COUNT_MIN_SIZE) cm_limiter3;
+    register<bit<10>>(COUNT_MIN_SIZE) cm_limiter4;
 
 
-    register<bit<16>>(4) window_id_tracker1;
-    register<bit<16>>(4) window_id_tracker2;
-    register<bit<16>>(4) window_id_tracker3;
-    register<bit<16>>(4) window_id_tracker4;
+    register<bit<16>>(COUNT_MIN_SIZE) window_id_tracker1;
+    register<bit<16>>(COUNT_MIN_SIZE) window_id_tracker2;
+    register<bit<16>>(COUNT_MIN_SIZE) window_id_tracker3;
+    register<bit<16>>(COUNT_MIN_SIZE) window_id_tracker4;
 
     register<bit<16>>(1) global_window_tracker;
 
@@ -117,8 +117,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w4);
         hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w4);
 
-        current_min = 0xFF;
-        bit<8> aux;
+        current_min = 1023;
+        bit<10> aux;
         cm_limiter1.read(aux, flow_hash1);
         current_min = aux < current_min ? aux : current_min;
 
@@ -227,7 +227,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
             last_packet_timestamp.read(last_timestamp, 0);
             bit<48> time_diff = standard_metadata.ingress_global_timestamp - last_timestamp;
-            if (time_diff > ONE_SECOND * 10) {
+            if (time_diff > ONE_SECOND * TIME_THRESHOLD) {
                 bit<16> global_window_id = 0;
                 global_window_tracker.read(global_window_id, 0);
                 global_window_id = global_window_id + 1;

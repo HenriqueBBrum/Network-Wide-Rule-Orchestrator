@@ -6,11 +6,16 @@
 #define PKT_INSTANCE_TYPE_REPLICATION 5
 #define PKT_INSTANCE_TYPE_RESUBMIT 6
 
-
 #define REPORT_MIRROR_SESSION_ID 500 // Session for mirrored packets
 
 const bit<48> ONE_SECOND = 1000000;
-const bit<8> MAX_PACKETS = 5;
+
+
+const bit<10> MAX_PACKETS = 10;
+const bit<48> TIME_THRESHOLD = 10;
+const bit<32> COUNT_MIN_SIZE = 256;
+
+
 const bit<9> DEFAULT_PORT = 3; // PORT TO FOWARD PACKETS
 const bit<9> PORT_TO_IDS = 2; // PORT TO REDIRECT PACKETS TO SNORT
 
