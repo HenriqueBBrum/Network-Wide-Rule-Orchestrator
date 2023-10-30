@@ -21,4 +21,6 @@ hinternet:
 
 hsnort
 
-	snort -c snort.lua --rules-path rules/.rules -A alert_json --lua "alert_json = {file = true}" -l logdir -L log_pcap
+	snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort-community -A alert_json --lua "alert_json = {file = true}" -l ../snort/logs -i eth0
+	snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort-community -A alert_json --lua "alert_json = {file = true}" -l ../snort/logs -i hsnort-eth1
+	snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort-community -A alert_json --lua "alert_json = {file = true}" -l ../snort/logs -i hsnort-eth2 --lua > stdout_output.txt
