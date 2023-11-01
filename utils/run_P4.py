@@ -26,6 +26,9 @@ import subprocess
 from time import sleep
 
 import p4runtime_lib.simple_controller
+
+
+
 from mininet.cli import CLI
 from mininet.link import TCLink
 from mininet.net import Mininet
@@ -153,7 +156,7 @@ class ExerciseRunner:
             return str(l) + "ms"
 
 
-    def __init__(self, topo_file, log_dir, pcap_dir,
+    def __init__(self, topo_file, test_file, log_dir, pcap_dir,
                        switch_json, bmv2_exe='simple_switch', quiet=False):
         """ Initializes some attributes and reads the topology json. Does not
             actually run the exercise. Use run_exercise() for that.
@@ -175,6 +178,10 @@ class ExerciseRunner:
         self.hosts = topo['hosts']
         self.switches = topo['switches']
         self.links = self.parse_links(topo['links'])
+
+        self.logger('Reading test file.')
+        with open(test_file, 'r') as f:
+            self.test = json.load(f)
 
         # Ensure all the needed directories exist and are directories
         for dir_name in [log_dir, pcap_dir]:
@@ -359,7 +366,28 @@ class ExerciseRunner:
             print(' for example run:  cat %s/s1-p4runtime-requests.txt' % self.log_dir)
             print('')
 
+
+
         CLI(self.net)
+
+        # print(self.test)
+
+        # print('Starting test')
+        # ct = 0
+        # for device in self.test['devices']:
+        #     dev_instance = self.net.get(device.get('name'))
+        #     print(device.get('name'))
+
+        #     for cmd in device['cmds']:
+        #         dev_instance.cmd(cmd)
+        #         print(cmd)
+
+        #     # First two device are receivers while the rest are clientes. Wait receivers to configure before sending
+            
+        #     sleep(1)
+
+        # sleep(self.test['time'])
+
 
 
 def get_args():
@@ -371,6 +399,8 @@ def get_args():
                         action='store_true', required=False, default=False)
     parser.add_argument('-t', '--topo', help='Path to topology json',
                         type=str, required=False, default='./topology.json')
+    parser.add_argument('-e', '--test', help='Path to a json test',
+                        type=str, required=False, default='./test.json')
     parser.add_argument('-l', '--log-dir', type=str, required=False, default=default_logs)
     parser.add_argument('-p', '--pcap-dir', type=str, required=False, default=default_pcaps)
     parser.add_argument('-j', '--switch_json', type=str, required=False)
@@ -384,7 +414,7 @@ if __name__ == '__main__':
     # setLogLevel("info")
 
     args = get_args()
-    exercise = ExerciseRunner(args.topo, args.log_dir, args.pcap_dir,
+    exercise = ExerciseRunner(args.topo, args.test, args.log_dir, args.pcap_dir,
                               args.switch_json, args.behavioral_exe, args.quiet)
 
     exercise.run_exercise()

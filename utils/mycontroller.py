@@ -14,7 +14,6 @@ import grpc
 
 # Import P4Runtime lib from parent utils dir
 # Probably there's a better way of doing this.
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../utils/'))
 import p4runtime_lib.bmv2
 import p4runtime_lib.helper
 from p4runtime_lib.error_utils import printGrpcError
@@ -36,7 +35,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main(args):
+def install_rules(args):
     # Instantiate a P4Runtime helper from the p4info file
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(args.p4info)
 
@@ -67,21 +66,14 @@ def main(args):
             switches[switch_id] = switch
             # Writes for each switch its rules
             write_rules(p4info_helper, switch, rules)   
-
-        while True:
-            # print('\n----- Reading table entries -----')
-            # for switch_id, switch_connection in switches.items():
-            #     readTableRules(p4info_helper, switch_connection)
-            # sleep(10)
-            # os.system('cls||clear')
-            sleep(100)
-
-            
+       
     except KeyboardInterrupt:
-        print(" Shutting down.")
+        print("Shutting down.")
     except grpc.RpcError as e:
         printGrpcError(e)
 
+
+def shutdown_switches():
     ShutdownAllSwitchConnections()
 
 

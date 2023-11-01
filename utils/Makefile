@@ -29,6 +29,11 @@ ifdef BMV2_SWITCH_EXE
 run_args += -b $(BMV2_SWITCH_EXE)
 endif
 
+ifdef TEST_JSON
+run_args += -e $(TEST_JSON)
+endif
+
+
 all: run
 
 run: build
