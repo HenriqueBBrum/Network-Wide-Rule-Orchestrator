@@ -14,10 +14,11 @@ fi
 config_file="$parent_path""/experiment_configuration/""$topology"".json"
 
 
-for pcap in /home/p4/Documents/P4-VM-Shared-Folder/*; do
+for pcap in ../../CICIDS2017-PCAPS/*; do
 	pcap_name=$(echo $pcap | sed "s/.*\///")
-	sed -i -e 's|P4-VM-Shared-Folder\/[^\"]*|P4-VM-Shared-Folder/'$pcap_name'|' $config_file
+	sed -i -e 's|CICIDS2017-PCAPS\/[^\"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
 	
+
 	cd ../src
 	make clean
 	make TEST_JSON=$config_file
@@ -34,5 +35,8 @@ for pcap in /home/p4/Documents/P4-VM-Shared-Folder/*; do
 
 	cd ../testing
 
+	
 	exit 1
 done;
+
+stty erase ^H

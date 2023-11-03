@@ -27,7 +27,7 @@ from time import sleep
 
 import p4runtime_lib.simple_controller
 
-
+from mycontroller import install_rules, shutdown_switches 
 
 from mininet.cli import CLI
 from mininet.link import TCLink
@@ -366,27 +366,30 @@ class ExerciseRunner:
             print(' for example run:  cat %s/s1-p4runtime-requests.txt' % self.log_dir)
             print('')
 
+        print(self.test)
+        print()
 
+        install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries"], self.test["start_nodes_strategy"])
 
-        CLI(self.net)
+        #CLI(self.net)
 
-        # print(self.test)
+        print('Starting test')
+        ct = 0
+        for device in self.test['devices']:
+            dev_instance = self.net.get(device.get('name'))
+            print(device.get('name'))
 
-        # print('Starting test')
-        # ct = 0
-        # for device in self.test['devices']:
-        #     dev_instance = self.net.get(device.get('name'))
-        #     print(device.get('name'))
+            for cmd in device['cmds']:
+                print(cmd)
+                dev_instance.cmd(cmd)
 
-        #     for cmd in device['cmds']:
-        #         dev_instance.cmd(cmd)
-        #         print(cmd)
-
-        #     # First two device are receivers while the rest are clientes. Wait receivers to configure before sending
+            # First two device are receivers while the rest are clientes. Wait receivers to configure before sending
             
-        #     sleep(1)
+            sleep(1)
 
-        # sleep(self.test['time'])
+        print('Ending test')
+
+        shutdown_switches()
 
 
 

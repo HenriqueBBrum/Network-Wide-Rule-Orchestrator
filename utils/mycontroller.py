@@ -1,3 +1,5 @@
+# FILE RESPONSIBLE FOR SPLITTING THE NIDS RULES TO THE SWITCHES AND OFFLOADING THE RULES TO THEM
+
 import argparse
 import os
 import sys
@@ -35,19 +37,18 @@ def parse_args():
     return parser.parse_args()
 
 
-def install_rules(args):
+def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, start_nodes_strategy):
     # Instantiate a P4Runtime helper from the p4info file
-    p4info_helper = p4runtime_lib.helper.P4InfoHelper(args.p4info)
+    p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
 
-    with open(args.network_info) as f:
+    with open(network_info_file) as f:
         network_info = json.load(f)
 
-    with open(args.table_entries) as rule_file:
-        rules = rule_file.read().splitlines()
+    with open(table_entries_file) as f:
+        rules = f.read().splitlines()
 
     # !!!!!!!!!!!!!!!Validate switch name. Name must be 's<non negative integer>'
-    device_table_entries_map = distribute_rules(network_info, rules, args.start_nodes_strategy)
-    print(device_table_entries_map.keys())
+    device_table_entries_map = distribute_rules(network_info, rules, start_nodes_strategy)
     try:
         # Create a switch connection object for s1 and s2; this is backed by a P4Runtime gRPC connection.
         switches = {}
@@ -62,7 +63,7 @@ def install_rules(args):
             # Send master arbitration update message to establish this controller as master
             switch.MasterArbitrationUpdate()
             print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
-            switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=args.bmv2_json)
+            switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
             switches[switch_id] = switch
             # Writes for each switch its rules
             write_rules(p4info_helper, switch, rules)   
@@ -181,34 +182,6 @@ def build_match_fields(rule_fields, ip_version=4):
 
     return match_fields
     
-
-def readTableRules(p4info_helper, switch):
-    """
-    Reads the table entries from all tables on the switch.
-
-    :param p4info_helper: the P4Info helper
-    :param sw: the switch connection
-    """
-    print('\n----- Reading tables rules for %s -----' % switch.name)
-    count = 0
-    for response in switch.ReadTableEntries():
-        for entity in response.entities:
-            if(count > 10):
-                return
-            entry = entity.table_entry
-            table_name = p4info_helper.get_tables_name(entry.table_id)
-            print('%s: ' % table_name, end=' ')
-            for m in entry.match:
-                print(p4info_helper.get_match_field_name(table_name, m.field_id), end=' ')
-                print('%r' % (p4info_helper.get_match_field_value(m),), end=' ')
-            action = entry.action.action
-            action_name = p4info_helper.get_actions_name(action.action_id)
-            print('->', action_name, end=' ')
-            for p in action.params:
-                print(p4info_helper.get_action_param_name(action_name, p.param_id), end=' ')
-                print('%r' % p.value, end=' ')
-            print()
-            count+=1
 
 if __name__ == '__main__':
     args = parse_args()
