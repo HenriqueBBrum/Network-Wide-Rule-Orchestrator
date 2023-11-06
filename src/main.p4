@@ -112,10 +112,10 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         bit<32> flow_hash3;
         bit<32> flow_hash4;
 
-        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w4);
-        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w4);
-        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w4);
-        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w4);
+        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
+        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
+        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
+        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
 
         current_min = 1023;
         bit<10> aux;
@@ -142,10 +142,10 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         bit<32> flow_hash3;
         bit<32> flow_hash4;
 
-        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w4);
-        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w4);
-        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w4);
-        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w4);
+        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
+        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
+        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
+        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
 
 
         bit<16> global_window_id = 0;
@@ -156,25 +156,29 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
         // Update count min row 1
         cm_limiter1.read(aux_counter, flow_hash1);
-        log_msg("cm_limiter1 new value {}", {aux_counter + 1});
+        log_msg("cm_limiter1 value {}", {aux_counter});
+        log_msg("hash {}", {flow_hash1});
         window_id_tracker1.read(aux_window_id_tracker, flow_hash1);
         cm_limiter1.write(flow_hash1,  (global_window_id - aux_window_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
 
         // Update count min row 2
         cm_limiter2.read(aux_counter, flow_hash2);
-        log_msg("cm_limiter2 new value {}", {aux_counter + 1});
+        log_msg("cm_limiter2 value {}", {aux_counter});
+        log_msg("hash {}", {flow_hash2});
         window_id_tracker2.read(aux_window_id_tracker, flow_hash2);
         cm_limiter2.write(flow_hash2,  (global_window_id - aux_window_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
 
         // Update count min row 3
         cm_limiter3.read(aux_counter, flow_hash3);
-        log_msg("cm_limiter3 new value {}", {aux_counter + 1});
+        log_msg("cm_limiter3 value {}", {aux_counter});
+        log_msg("hash {}", {flow_hash3});
         window_id_tracker3.read(aux_window_id_tracker, flow_hash3);
         cm_limiter3.write(flow_hash3,  (global_window_id - aux_window_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
 
         // Update count min row 4
         cm_limiter4.read(aux_counter, flow_hash4);
-        log_msg("cm_limiter4 new value {}", {aux_counter + 1});
+        log_msg("cm_limiter4 value {}", {aux_counter});
+        log_msg("hash {}", {flow_hash4});
         window_id_tracker4.read(aux_window_id_tracker, flow_hash4);
         cm_limiter4.write(flow_hash4,  (global_window_id - aux_window_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
 
@@ -212,14 +216,17 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
             }
 
             if(meta.ids_table_match){
+                log_msg("table match");
                 increment_cm_limiter(meta.protocol, src_IP, dst_IP, meta.srcPort, meta.dstPort);
                 read_cm_limiter(meta.protocol, src_IP, dst_IP, meta.srcPort, meta.dstPort);
                 // If this flow ID is not in Count-min Sketch, meaning it is an unknown flow
                 if(current_min == 1){
+                    log_msg("new match");
                     ids_flow.count((bit<32>) 1);
                     clone(CloneType.I2E, REPORT_MIRROR_SESSION_ID);
                 // This flow is already present at the Count-min Sketch but it's still needed to foward some of the flow's packets to the IDS
                 }else if(current_min <= MAX_PACKETS){
+                    log_msg("old match");
                     clone(CloneType.I2E, REPORT_MIRROR_SESSION_ID);
                 }
                 // This flow is already present at the Count-min Sketch and it's not needed to foward packets from this flow to the IDS

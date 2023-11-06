@@ -12,14 +12,13 @@
 	"devices":[
 		{
 			"name":"hsnort",
-			"cmds":["touch ../snort/logs/eth0/output.pcap","chmod o+x ../snort/logs/eth0/output.pcap", "tshark -i eth0 -w ../snort/logs/eth0/output.pcap &",
-				"snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort-community -A alert_json --lua \"alert_json = {file = true}\" -l ../snort/logs/eth0 -i eth0 > ../snort/logs/eth0/output.txt &",
-			   "snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort-community -A alert_json --lua \"alert_json = {file = true}\" -l ../snort/logs/hsnort-eth1 -L log_pcap -i hsnort-eth1 > ../snort/logs/hsnort-eth1/output.txt &",
-			   "snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort-community -A alert_json --lua \"alert_json = {file = true}\" -l ../snort/logs/hsnort-eth2 -L log_pcap -i hsnort-eth2 > ../snort/logs/hsnort-eth2/output.txt &"]
+			"cmds":["snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort-community -A alert_json --lua \"alert_json = {file = true}\" -l ../snort/logs/eth0 -i eth0 > ../snort/logs/eth0/output.txt &",
+			   "snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort-community -A alert_json --lua \"alert_json = {file = true}\" -l ../snort/logs/hsnort-eth1 -i hsnort-eth1 > ../snort/logs/hsnort-eth1/output.txt &",
+			   "snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort-community -A alert_json --lua \"alert_json = {file = true}\" -l ../snort/logs/hsnort-eth2 -i hsnort-eth2 > ../snort/logs/hsnort-eth2/output.txt &"]
 		},
 		{
 			"name":"hinternet",
-			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1500 -L 30000 ../../CICIDS2017-PCAPS/Friday-WorkingHours.pcap"]
+			"cmds":["tcpreplay-edit  --mtu-trunc -i eth0 -p1500 ../../CICIDS2017-PCAPS/Wednesday-WorkingHours.pcap"]
 		}]
 
 }

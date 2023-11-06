@@ -35,8 +35,6 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 
 	cd ../testing
 
-	
-	exit 1
 done;
 
 stty erase ^H
