@@ -371,23 +371,23 @@ class ExerciseRunner:
 
         install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries"], self.test["start_nodes_strategy"])
 
-        CLI(self.net)
+        # CLI(self.net)
 
-        # print('Starting test')
-        # ct = 0
-        # for device in self.test['devices']:
-        #     dev_instance = self.net.get(device.get('name'))
-        #     print(device.get('name'))
-        #
-        #     for cmd in device['cmds']:
-        #         print(cmd)
-        #         dev_instance.cmd(cmd)
-        #
-        #     # First two device are receivers while the rest are clientes. Wait receivers to configure before sending
-        #
-        #     sleep(1)
-        #
-        # print('Ending test')
+        print('Starting test')
+        ct = 0
+        for device in self.test['devices']:
+            dev_instance = self.net.get(device.get('name'))
+            print(device.get('name'))
+        
+            for cmd in device['cmds']:
+                print(cmd)
+                dev_instance.cmd(cmd)
+        
+            # First two device are receivers while the rest are clientes. Wait receivers to configure before sending
+        
+            sleep(1)
+        
+        print('Ending test')
 
         shutdown_switches()
 

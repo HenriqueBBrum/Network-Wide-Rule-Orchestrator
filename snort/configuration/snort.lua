@@ -130,7 +130,7 @@ ftp_server = default_ftp_server
 ftp_client = { }
 ftp_data = { }
 
-http_inspect = default_http_inspect
+http_inspect = { }
 http2_inspect = { }
 
 -- see file_magic.rules for file id rules

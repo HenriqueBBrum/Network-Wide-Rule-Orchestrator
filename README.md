@@ -1,5 +1,26 @@
 # Network-Wide-Rule-Orchestrator
 
+Instalation
+
+
+sudo apt update
+
+cd Documents 
+
+mkdir FolderName..
+cd FolderName
+
+git clone Network-WIde...
+
+# Dowload CIDIDS-2017 files
+
+cd Network-WIde
+
+run ./install_dependencies.sh
+
+mkdir experiments_output
+
+
 
 How to execute:
 

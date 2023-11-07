@@ -13,6 +13,11 @@ fi
 
 config_file="$parent_path""/experiment_configuration/""$topology"".json"
 
+mkdir ../snort/logs
+mkdir ../snort/logs/eth0
+mkdir ../snort/logs/hsnort-eth1
+mkdir ../snort/logs/hsnort-eth2
+
 
 for pcap in ../../CICIDS2017-PCAPS/*; do
 	pcap_name=$(echo $pcap | sed "s/.*\///")
