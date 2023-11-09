@@ -23,7 +23,6 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	pcap_name=$(echo $pcap | sed "s/.*\///")
 	sed -i -e 's|CICIDS2017-PCAPS\/[^\"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
 
-
 	cd ../src
 	make clean
 	make TEST_JSON=$config_file
@@ -32,15 +31,17 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 
 	mkdir $output_folder${array[0]}
 
+	sudo chmod -R a+rwx ../snort/logs/*
 	cp -r ../snort/logs/* $output_folder/"${array[0]}"
-	sudo chmod -R a+rwx $output_folder/"${array[0]}"
-	
+
 	rm ../snort/logs/eth0/*
 	rm ../snort/logs/hsnort-eth1/*
 	rm ../snort/logs/hsnort-eth2/*
 
 	cd ../testing
 
+	exit
 done;
+
 
 stty erase ^H

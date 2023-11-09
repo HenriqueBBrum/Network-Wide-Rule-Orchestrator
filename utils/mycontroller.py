@@ -21,6 +21,10 @@ import p4runtime_lib.helper
 from p4runtime_lib.error_utils import printGrpcError
 from p4runtime_lib.switch import ShutdownAllSwitchConnections
 
+
+switches = {}
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='P4Runtime Controller')
     parser.add_argument('--p4info', help='p4info proto in text format from p4c',
@@ -51,10 +55,9 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, star
     device_table_entries_map = distribute_rules(network_info, rules, start_nodes_strategy)
     try:
         # Create a switch connection object for s1 and s2; this is backed by a P4Runtime gRPC connection.
-        switches = {}
         for switch_id, rules in device_table_entries_map.items():
             num_id = int(switch_id.split('s')[1])
-            switch = p4runtime_lib.bmv2.Bmv2SwitchConnection( 
+            switch = p4runtime_lib.bmv2.Bmv2SwitchConnection(
                 name=switch_id,
                 address='127.0.0.1:5005'+str(num_id),
                 device_id=num_id-1,
@@ -66,8 +69,9 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, star
             switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
             switches[switch_id] = switch
             # Writes for each switch its rules
-            write_rules(p4info_helper, switch, rules)   
-       
+            write_rules(p4info_helper, switch, rules)
+            read_table_rules(p4info_helper, switch)
+
     except KeyboardInterrupt:
         print("Shutting down.")
     except grpc.RpcError as e:
@@ -102,10 +106,10 @@ def distribute_rules(network_info, rules, strategy):
     # Creates the edges according to the existent links
     for link in network_info["links"]:
         if 'h' in link[0] or 'h' in link[1]:
-            continue     
+            continue
         network.add_edge(link[0], link[1], weight=network.nodes[link[0]]["free_table_entries"])
         network.add_edge(link[1], link[0], weight=network.nodes[link[1]]["free_table_entries"])
-    
+
     # Calculates the least safe path length and determine the subset of rules for "node"
     for node in not_initial_nodes:
         l = nx.shortest_path_length(network, source="start", target=node, weight="weight")
@@ -120,7 +124,7 @@ def write_rules(p4info_helper, switch, rules):
         rule_fields = get_rule_fields(rule)
         if rule_fields["table_name"] == "ipv4_ids":
             # Remove "don't care entries" (e.g. 0.0.0.0 IP or 0-65535 port range) because P4Runtime does not accept them
-            match_fields = build_match_fields(rule_fields) 
+            match_fields = build_match_fields(rule_fields)
             table_entry = p4info_helper.buildTableEntry(
                 table_name="MyIngress.ipv4_ids",
                 priority=int(rule_fields["priority"]),
@@ -134,12 +138,12 @@ def write_rules(p4info_helper, switch, rules):
                 match_fields=match_fields,
                 action_name="MyIngress."+rule_fields["action"])
         switch.WriteTableEntry(table_entry)
-        
+
 # Parses a table entry from the rule compiler list and saves the meaningful fields to a dict
 def get_rule_fields(rule):
     rule_fields = {}
     rule_items = rule.split(" ")
-    
+
     rule_fields["table_name"] = rule_items[1]
     rule_fields["action"] = rule_items[2]
     rule_fields["protocol"] = rule_items[3]
@@ -181,7 +185,46 @@ def build_match_fields(rule_fields, ip_version=4):
     match_fields["meta.flags"] = int(rule_fields["flags"], 2)
 
     return match_fields
-    
+
+
+def read_table_rules(p4info_helper, switch):
+    print('\n----- Reading tables rules for %s -----' % switch.name)
+    count = 0
+    for response in switch.ReadTableEntries():
+        print("Number of rules ", len(response.entities))
+        for entity in response.entities:
+            if(count > 5):
+                return
+            entry = entity.table_entry
+            table_name = p4info_helper.get_tables_name(entry.table_id)
+            print('%s: ' % table_name, end=' ')
+            for m in entry.match:
+                print(p4info_helper.get_match_field_name(table_name, m.field_id), end=' ')
+                print('%r' % (p4info_helper.get_match_field_value(m),), end=' ')
+            action = entry.action.action
+            action_name = p4info_helper.get_actions_name(action.action_id)
+            print('->', action_name, end=' ')
+            for p in action.params:
+                print(p4info_helper.get_action_param_name(action_name, p.param_id), end=' ')
+                print('%r' % p.value, end=' ')
+            print()
+            count+=1
+
+
+def read_counters(p4info):
+    p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
+    for switch_id, switch in switches.items():
+        print('\n----- Reading counters for %s -----' % switch.name)
+        for response in switch.ReadCounters():
+            print("Number of counters ", len(response.entities))
+            for entity in response.entities:
+                entry = entity.counter_entry
+                if entry.data.packet_count > 0:
+                    print('Counter name: ', p4info_helper.get_counters_name(entry.counter_id), end=' ')
+                    print('\nIndex (port): ', entry.index, end=' ')
+                    print("Data: ", entry.data)
+
+
 
 if __name__ == '__main__':
     args = parse_args()

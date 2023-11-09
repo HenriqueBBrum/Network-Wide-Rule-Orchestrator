@@ -27,7 +27,7 @@ from time import sleep
 
 import p4runtime_lib.simple_controller
 
-from mycontroller import install_rules, shutdown_switches
+from mycontroller import install_rules, shutdown_switches, read_counters
 
 from mininet.cli import CLI
 from mininet.link import TCLink
@@ -89,8 +89,7 @@ class ExerciseTopo(Topo):
                 switchClass = configureP4Switch(
                         sw_path=bmv2_exe,
                         json_path=params["program"],
-                        log_console=True,
-                        pcap_dump=pcap_dir)
+                        log_console=True)
             else:
                 # add default switch
                 switchClass = None
@@ -258,8 +257,7 @@ class ExerciseRunner:
         defaultSwitchClass = configureP4Switch(
                                 sw_path=self.bmv2_exe,
                                 json_path=self.switch_json,
-                                log_console=True,
-                                pcap_dump=self.pcap_dir)
+                                log_console=True)
 
         self.topo = ExerciseTopo(self.hosts, self.switches, self.links, self.log_dir, self.bmv2_exe, self.pcap_dir)
         self.net = Mininet(topo = self.topo,
@@ -366,29 +364,25 @@ class ExerciseRunner:
             print(' for example run:  cat %s/s1-p4runtime-requests.txt' % self.log_dir)
             print('')
 
+
+        install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries"], self.test["start_nodes_strategy"])
         print(self.test)
         print()
 
-        install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries"], self.test["start_nodes_strategy"])
-
-        # CLI(self.net)
+        #CLI(self.net)
 
         print('Starting test')
-        ct = 0
         for device in self.test['devices']:
             dev_instance = self.net.get(device.get('name'))
             print(device.get('name'))
-        
             for cmd in device['cmds']:
                 print(cmd)
                 dev_instance.cmd(cmd)
-        
-            # First two device are receivers while the rest are clientes. Wait receivers to configure before sending
-        
-            sleep(1)
-        
-        print('Ending test')
 
+            sleep(1)
+
+        print('Ending test')
+        read_counters(self.test["p4info"])
         shutdown_switches()
 
 

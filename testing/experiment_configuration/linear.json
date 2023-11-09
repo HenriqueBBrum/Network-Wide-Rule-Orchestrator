@@ -1,6 +1,6 @@
 {
 	"p4info": "../src/build/main.p4.p4info.txt",
-	
+
 	"bmv2_json": "../src/build/main.json",
 
 	"network_info": "../src/topologies/linear/network_info.json",
@@ -18,7 +18,6 @@
 		},
 		{
 			"name":"hinternet",
-			"cmds":["tcpreplay-edit  --mtu-trunc -i eth0 -p1500 ../../CICIDS2017-PCAPS/Friday-WorkingHours.pcap"]
+			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/Friday-WorkingHours.pcap"]
 		}]
-
 }
