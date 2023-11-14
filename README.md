@@ -1,41 +1,46 @@
 # Network-Wide-Rule-Orchestrator
 
-Instalation
+## Installation Process
+
+### Install vagrant and VirtualBox, and build the P4 virtual machine
+
+git clone https://github.com/p4lang/tutorials.git
+cd tutorial/vm-ubuntu-20.04
+vagrant up
 
 
+### Turn of the machine and extend the number of cores (4cores) and memory size (4GB)
+
+### Dowload the CIDIDS-2017 files and create a shared folder with the guest system
+The guest folder should be named CICIDS2017-PCAPS and placed at the same level as this repos folder
+
+### Log into the machine
+
+```
 sudo apt update
+```
 
-cd Documents 
+```
+cd Documents
+```
+git clone  https://github.com/HenriqueBBrum/Network-Wide-Rule-Orchestrator.git
 
-mkdir FolderName..
-cd FolderName
+cd Network-Wide-Rule-Orchestrator
 
-git clone Network-WIde...
-
-# Dowload CIDIDS-2017 files
-
-cd Network-WIde
-
-run ./install_dependencies.sh
-
-mkdir experiments_output
-
+## Install dependencies - TCPreplay, python packages, BMv2 (for high performance), and Snort
+cd  testing
+./install_dependencies.sh
 
 
 How to execute:
 
 
-make clean && make
+cd testing
+./run_experiments linear ../experiments_output
 
-
-then run the mycontroller.py to build the switch configuration
-
-python3 mycontroller.py --network_info etc/simple_linear_scenario/network_info.json --table_entries p4_table_entries.config
 
 
 commands to run in each host
-
-
 
 hsnort
 
