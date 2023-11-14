@@ -112,10 +112,10 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         bit<32> flow_hash3;
         bit<32> flow_hash4;
 
-        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
-        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
-        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
-        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
+        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
+        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
+        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
+        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
 
         current_min = 1023;
         bit<10> aux;
@@ -140,10 +140,10 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         bit<32> flow_hash3;
         bit<32> flow_hash4;
 
-        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
-        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
-        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
-        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, 32w1024);
+        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
+        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
+        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
+        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
 
         bit<16> global_window_id = 0;
         global_window_tracker.read(global_window_id, 0);

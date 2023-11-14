@@ -1,15 +1,23 @@
 #!/bin/bash
 
-parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-
-topology=$1
-output_folder=$2
-
 if [ $# -lt 2 ]
 then
 	echo "No arguments provided"
 	exit 1
 fi
+
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+
+topology=$1
+output_folder=$2
+
+if [ ! -d $output_folder ]
+then
+	echo "Folder "$output_folder" does not exist"
+	exit 1
+fi
+
+
 
 config_file="$parent_path""/experiment_configuration/""$topology"".json"
 
@@ -39,8 +47,6 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	rm ../snort/logs/hsnort-eth2/*
 
 	cd ../testing
-
-	exit
 done;
 
 

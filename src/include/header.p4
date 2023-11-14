@@ -13,7 +13,7 @@ const bit<48> ONE_SECOND = 1000000;
 
 const bit<10> MAX_PACKETS = 10;
 const bit<48> TIME_THRESHOLD = 10;
-const bit<32> COUNT_MIN_SIZE = 1024; // CHANGE THE HASH AS WELL
+const bit<32> COUNT_MIN_SIZE = 4096; // CHANGE THE HASH AS WELL
 
 
 const bit<9> DEFAULT_PORT = 3; // PORT TO FOWARD PACKETS
@@ -27,7 +27,7 @@ const bit<16> TYPE_IPV6 = 0x86DD;
 const bit<16> TYPE_ALERT = 0x2345;
 
 // IP Protocol (nextHeader) field useful values
-const bit<8> TYPE_ICMP = 0x01; 
+const bit<8> TYPE_ICMP = 0x01;
 const bit<8> TYPE_TCP = 0x06;
 const bit<8> TYPE_UDP = 0x11;
 
@@ -103,7 +103,7 @@ header tcp_t {
     bit<16> urgentPtr;
 }
 
-// Header can have UDP, TCP or ICMP 
+// Header can have UDP, TCP or ICMP
 header_union ip_encapsulated_proto_t{
     udp_t  udp;
     tcp_t  tcp;
