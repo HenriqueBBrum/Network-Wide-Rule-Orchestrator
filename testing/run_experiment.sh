@@ -49,5 +49,7 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	cd ../testing
 done;
 
+cd ../src
+make clean
 
 stty erase ^H

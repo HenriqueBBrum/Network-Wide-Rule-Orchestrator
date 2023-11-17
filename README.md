@@ -2,19 +2,24 @@
 
 ## Installation Process
 
-### Install vagrant and VirtualBox, and build the P4 virtual machine
+### 1. Install vagrant and VirtualBox, and build the P4 virtual machine
 
 git clone https://github.com/p4lang/tutorials.git
 cd tutorial/vm-ubuntu-20.04
 vagrant up
 
 
-### Turn of the machine and extend the number of cores (4cores) and memory size (4GB)
+### 2. Turn of the machine and extend the number of cores (4cores) and memory size (4GB)
 
-### Dowload the CIDIDS-2017 files and create a shared folder with the guest system
-The guest folder should be named CICIDS2017-PCAPS and placed at the same level as this repos folder
+### 3. Download the CIDIDS-2017 files and create a shared folder with the guest system
 
-### Log into the machine
+
+The guest folder should be named CICIDS2017-PCAPS and placed at the same level as this repo's folder. The image below illustrates this:
+
+
+Follow this guide to understand how to create shared folders with VirtualBox 
+
+### 4. Log into the machine and clone this repository 
 
 ```
 sudo apt update
@@ -23,20 +28,34 @@ sudo apt update
 ```
 cd Documents
 ```
+
+```
 git clone  https://github.com/HenriqueBBrum/Network-Wide-Rule-Orchestrator.git
+```
 
+```
 cd Network-Wide-Rule-Orchestrator
+```
 
-## Install dependencies - TCPreplay, python packages, BMv2 (for high performance), and Snort
-cd  testing
+### 5. Install the dependencies
+
+The installed packages include:
+	- tcpreplay
+	- Matplotlib and networkx (Python)
+	- BMv2 (for custom high performance)
+	- Snort3
+
+
+```
 ./install_dependencies.sh
+```
 
 
-How to execute:
+## Running an experiment
 
-
-cd testing
-./run_experiments linear ../experiments_output
+```
+cd testing && ./run_experiments linear ../experiments_output
+```
 
 
 

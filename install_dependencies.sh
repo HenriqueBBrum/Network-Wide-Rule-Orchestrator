@@ -1,12 +1,17 @@
 #!/bin/bash
 
+SECONDS=0
+
+
 printf "\n####### CREATING OUTPUT FOLDER #######\n"
 mkdir experiments_output
+
 
 
 # Install TCPreplay
 printf "\n####### INSTALLING TCPREPLAY #######\n"
 sudo apt install -y tcpreplay
+
 
 
 # Install python libs
@@ -75,3 +80,7 @@ cd build
 make
 sudo make install
 sudo ldconfig
+
+
+duration=$SECONDS
+echo "$(($duration / 60)) minutes and $(($duration % 60)) seconds elapsed"
