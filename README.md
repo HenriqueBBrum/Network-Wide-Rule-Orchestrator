@@ -71,3 +71,9 @@ hsnort
 hinternet:
 
 	tcpreplay -i eth0 -p100 ../../CICIDS2017-PCAPS/Monday...pcap
+
+
+command to test baseline slerts by snort
+
+
+snort -c snort.lua --rule-ath ../rule/path -R pcap_file.pcap -A alert_json --lua "alert_json = {file = true}" 

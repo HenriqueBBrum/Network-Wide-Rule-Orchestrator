@@ -1,0 +1,143 @@
+--------------------------------------------------
+o")~   Snort++ 3.1.73.0
+--------------------------------------------------
+Loading ../snort/configuration/snort.lua:
+Loading snort_defaults.lua:
+Finished snort_defaults.lua:
+	ssh
+	host_cache
+	pop
+	so_proxy
+	stream_tcp
+	mms
+	gtp_inspect
+	packets
+	dce_http_proxy
+	alert_json
+	ips
+	stream_icmp
+	binder
+	normalizer
+	wizard
+	appid
+	http2_inspect
+	http_inspect
+	ftp_data
+	ftp_server
+	stream_udp
+	smtp
+	port_scan
+	dce_http_server
+	search_engine
+	dce_tcp
+	iec104
+	arp_spoof
+	dce_smb
+	cip
+	telnet
+	ssl
+	sip
+	rpc_decode
+	netflow
+	modbus
+	stream_user
+	host_tracker
+	stream_ip
+	stream
+	process
+	back_orifice
+	classifications
+	dnp3
+	active
+	ftp_client
+	network
+	daq
+	decode
+	alerts
+	trace
+	hosts
+	references
+	output
+	dns
+	dce_udp
+	imap
+	file_policy
+	s7commplus
+	stream_file
+Finished ../snort/configuration/snort.lua:
+appid: MaxRss diff: 2820
+appid: patterns loaded: 300
+--------------------------------------------------
+pcap DAQ configured to passive.
+Commencing packet processing
+++ [0] hsnort-eth2
+-- [0] hsnort-eth2
+--------------------------------------------------
+Packet Statistics
+--------------------------------------------------
+daq
+                 received: 118068
+                 analyzed: 118068
+                    allow: 118068
+                     idle: 3343
+                 rx_bytes: 7205884
+--------------------------------------------------
+codec
+                    total: 118068      	(100.000%)
+                      eth: 118068      	(100.000%)
+                    icmp6: 10          	(  0.008%)
+                     ipv4: 118058      	( 99.992%)
+                     ipv6: 10          	(  0.008%)
+                      tcp: 118058      	( 99.992%)
+--------------------------------------------------
+Module Statistics
+--------------------------------------------------
+appid
+                  packets: 118068
+        processed_packets: 382
+          ignored_packets: 117686
+           total_sessions: 350
+--------------------------------------------------
+binder
+              raw_packets: 117686
+                new_flows: 350
+                 inspects: 118036
+--------------------------------------------------
+detection
+                 analyzed: 118068
+--------------------------------------------------
+port_scan
+                  packets: 118068
+                 trackers: 6479
+--------------------------------------------------
+stream
+                    flows: 350
+             total_prunes: 350
+idle_prunes_proto_timeout: 350
+--------------------------------------------------
+stream_icmp
+                 sessions: 6
+                      max: 6
+                  created: 6
+                 released: 6
+--------------------------------------------------
+stream_tcp
+                 sessions: 344
+                      max: 344
+                  created: 344
+             instantiated: 344
+                   setups: 344
+                     fins: 372
+--------------------------------------------------
+Appid Statistics
+--------------------------------------------------
+detected apps and services
+              Application: Services   Clients    Users      Payloads   Misc       Referred  
+                  unknown: 344        0          0          0          0          0         
+--------------------------------------------------
+Summary Statistics
+--------------------------------------------------
+timing
+                  runtime: 02:46:52
+                  seconds: 10012.092738
+o")~   Snort exiting

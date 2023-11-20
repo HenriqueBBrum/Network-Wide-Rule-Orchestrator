@@ -1,0 +1,199 @@
+--------------------------------------------------
+o")~   Snort++ 3.1.73.0
+--------------------------------------------------
+Loading ../snort/configuration/snort.lua:
+Loading snort_defaults.lua:
+Finished snort_defaults.lua:
+	ssh
+	host_cache
+	pop
+	so_proxy
+	stream_tcp
+	mms
+	gtp_inspect
+	packets
+	dce_http_proxy
+	alert_json
+	ips
+	stream_icmp
+	binder
+	normalizer
+	wizard
+	appid
+	http2_inspect
+	http_inspect
+	ftp_data
+	ftp_server
+	stream_udp
+	smtp
+	port_scan
+	dce_http_server
+	search_engine
+	dce_tcp
+	iec104
+	arp_spoof
+	dce_smb
+	cip
+	telnet
+	ssl
+	sip
+	rpc_decode
+	netflow
+	modbus
+	stream_user
+	host_tracker
+	stream_ip
+	stream
+	process
+	back_orifice
+	classifications
+	dnp3
+	active
+	ftp_client
+	network
+	daq
+	decode
+	alerts
+	trace
+	hosts
+	references
+	output
+	dns
+	dce_udp
+	imap
+	file_policy
+	s7commplus
+	stream_file
+Finished ../snort/configuration/snort.lua:
+appid: MaxRss diff: 2820
+appid: patterns loaded: 300
+--------------------------------------------------
+pcap DAQ configured to passive.
+Commencing packet processing
+++ [0] eth0
+-- [0] eth0
+--------------------------------------------------
+Packet Statistics
+--------------------------------------------------
+daq
+                 received: 830423
+                 analyzed: 830423
+                    allow: 830423
+                     idle: 2499
+                 rx_bytes: 91405574
+--------------------------------------------------
+codec
+                    total: 830567      	(100.000%)
+                 discards: 4           	(  0.000%)
+                      eth: 830567      	(100.000%)
+                      gtp: 4           	(  0.000%)
+                    icmp4: 451         	(  0.054%)
+                 icmp4_ip: 373         	(  0.045%)
+                    icmp6: 10          	(  0.001%)
+                     ipv4: 830557      	( 99.999%)
+                     ipv6: 10          	(  0.001%)
+                      tcp: 157849      	( 19.005%)
+                      udp: 671919      	( 80.899%)
+--------------------------------------------------
+Module Statistics
+--------------------------------------------------
+appid
+                  packets: 830567
+        processed_packets: 826985
+          ignored_packets: 3582
+           total_sessions: 329938
+       service_cache_adds: 1584
+             bytes_in_use: 240768
+             items_in_use: 1584
+--------------------------------------------------
+back_orifice
+                  packets: 671232
+--------------------------------------------------
+binder
+              raw_packets: 3438
+                new_flows: 303286
+                 inspects: 306724
+--------------------------------------------------
+detection
+                 analyzed: 830423
+--------------------------------------------------
+dns
+                  packets: 653580
+                 requests: 338670
+                responses: 314902
+--------------------------------------------------
+normalizer
+           test_tcp_block: 2312
+--------------------------------------------------
+port_scan
+                  packets: 830567
+                 trackers: 1202
+--------------------------------------------------
+stream
+                    flows: 303286
+             total_prunes: 298234
+idle_prunes_proto_timeout: 298234
+--------------------------------------------------
+stream_icmp
+                 sessions: 41
+                      max: 41
+                  created: 41
+                 released: 41
+--------------------------------------------------
+stream_ip
+                 sessions: 169
+                      max: 169
+                  created: 169
+                 released: 169
+              total_bytes: 302772
+              total_frags: 338
+            current_frags: 144
+              reassembled: 144
+                 overlaps: 25
+                anomalies: 25
+                   alerts: 25
+           trackers_added: 169
+           trackers_freed: 169
+         trackers_cleared: 169
+       trackers_completed: 144
+           nodes_inserted: 338
+            nodes_deleted: 338
+        reassembled_bytes: 233668
+         fragmented_bytes: 315616
+--------------------------------------------------
+stream_tcp
+                 sessions: 148302
+                      max: 148302
+                  created: 148302
+                 released: 148302
+             instantiated: 148302
+                   setups: 148302
+         discards_skipped: 2312
+             syn_trackers: 148302
+                     syns: 154025
+                   resets: 386
+--------------------------------------------------
+stream_udp
+                 sessions: 154774
+                      max: 154774
+                  created: 181427
+                 released: 181427
+                 timeouts: 26653
+              total_bytes: 52424753
+--------------------------------------------------
+wizard
+                udp_scans: 2524
+               udp_misses: 2524
+--------------------------------------------------
+Appid Statistics
+--------------------------------------------------
+detected apps and services
+              Application: Services   Clients    Users      Payloads   Misc       Referred  
+                  unknown: 178208     177818     44         0          0          0         
+--------------------------------------------------
+Summary Statistics
+--------------------------------------------------
+timing
+                  runtime: 02:46:51
+                  seconds: 10011.856664
+o")~   Snort exiting

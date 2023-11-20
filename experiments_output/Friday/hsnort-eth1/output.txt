@@ -1,0 +1,161 @@
+--------------------------------------------------
+o")~   Snort++ 3.1.73.0
+--------------------------------------------------
+Loading ../snort/configuration/snort.lua:
+Loading snort_defaults.lua:
+Finished snort_defaults.lua:
+	ssh
+	host_cache
+	pop
+	so_proxy
+	stream_tcp
+	mms
+	gtp_inspect
+	packets
+	dce_http_proxy
+	alert_json
+	ips
+	stream_icmp
+	binder
+	normalizer
+	wizard
+	appid
+	http2_inspect
+	http_inspect
+	ftp_data
+	ftp_server
+	stream_udp
+	smtp
+	port_scan
+	dce_http_server
+	search_engine
+	dce_tcp
+	iec104
+	arp_spoof
+	dce_smb
+	cip
+	telnet
+	ssl
+	sip
+	rpc_decode
+	netflow
+	modbus
+	stream_user
+	host_tracker
+	stream_ip
+	stream
+	process
+	back_orifice
+	classifications
+	dnp3
+	active
+	ftp_client
+	network
+	daq
+	decode
+	alerts
+	trace
+	hosts
+	references
+	output
+	dns
+	dce_udp
+	imap
+	file_policy
+	s7commplus
+	stream_file
+Finished ../snort/configuration/snort.lua:
+appid: MaxRss diff: 2820
+appid: patterns loaded: 300
+--------------------------------------------------
+pcap DAQ configured to passive.
+Commencing packet processing
+++ [0] hsnort-eth1
+-- [0] hsnort-eth1
+--------------------------------------------------
+Packet Statistics
+--------------------------------------------------
+daq
+                 received: 28617
+                 analyzed: 28617
+                    allow: 28617
+                     idle: 4993
+                 rx_bytes: 1906226
+--------------------------------------------------
+codec
+                    total: 28617       	(100.000%)
+                      eth: 28617       	(100.000%)
+                    icmp6: 10          	(  0.035%)
+                     ipv4: 28607       	( 99.965%)
+                     ipv6: 10          	(  0.035%)
+                      tcp: 28600       	( 99.941%)
+                      udp: 7           	(  0.024%)
+--------------------------------------------------
+Module Statistics
+--------------------------------------------------
+appid
+                  packets: 28617
+        processed_packets: 384
+          ignored_packets: 28233
+           total_sessions: 373
+       service_cache_adds: 2
+             bytes_in_use: 304
+             items_in_use: 2
+--------------------------------------------------
+back_orifice
+                  packets: 6
+--------------------------------------------------
+binder
+              raw_packets: 28233
+                new_flows: 373
+                 inspects: 28606
+--------------------------------------------------
+detection
+                 analyzed: 28617
+--------------------------------------------------
+dns
+                  packets: 6
+                 requests: 6
+--------------------------------------------------
+port_scan
+                  packets: 28617
+                 trackers: 3133
+--------------------------------------------------
+stream
+                    flows: 373
+             total_prunes: 367
+idle_prunes_proto_timeout: 367
+--------------------------------------------------
+stream_icmp
+                 sessions: 6
+                      max: 6
+                  created: 6
+                 released: 6
+--------------------------------------------------
+stream_tcp
+                 sessions: 363
+                      max: 363
+                  created: 363
+             instantiated: 363
+                   setups: 363
+                     fins: 367
+--------------------------------------------------
+stream_udp
+                 sessions: 4
+                      max: 4
+                  created: 4
+                 released: 4
+              total_bytes: 202
+--------------------------------------------------
+Appid Statistics
+--------------------------------------------------
+detected apps and services
+              Application: Services   Clients    Users      Payloads   Misc       Referred  
+                  unknown: 363        3          0          0          0          0         
+--------------------------------------------------
+Summary Statistics
+--------------------------------------------------
+timing
+                  runtime: 02:46:51
+                  seconds: 10011.892914
+o")~   Snort exiting
