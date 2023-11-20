@@ -10,6 +10,9 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 topology=$1
 output_folder=$2
+n_redirected_packets=$3
+time_threshold=$4
+count_min_size=$5
 
 if [ ! -d $output_folder ]
 then
@@ -17,7 +20,24 @@ then
 	exit 1
 fi
 
+if [ -z "$n_redirected_packets" ]
+then
+	n_redirected_packets=10
+fi
 
+if [ -z "$time_threshold" ]
+then
+	time_threshold=10
+fi
+
+if [ -z "$count_min_size" ]
+then
+	count_min_size=1024
+fi
+
+sed -i -e 's|MAX_PACKETS=[^;"]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
+sed -i -e 's|TIME_THRESHOLD=[^;"]*|TIME_THRESHOLD='$time_threshold'|' ../src/include/header.p4
+sed -i -e 's|COUNT_MIN_SIZE=[^;"]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
 
 config_file="$parent_path""/experiment_configuration/""$topology"".json"
 
