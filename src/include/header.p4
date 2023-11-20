@@ -10,15 +10,12 @@
 
 const bit<48> ONE_SECOND = 1000000;
 
-
 const bit<10> MAX_PACKETS=10;
 const bit<48> TIME_THRESHOLD=10;
-const bit<32> COUNT_MIN_SIZE=4096; // CHANGE THE HASH AS WELL
-
+const bit<32> COUNT_MIN_SIZE=1024; 
 
 const bit<9> DEFAULT_PORT = 3; // PORT TO FORWARD PACKETS
 const bit<9> PORT_TO_IDS = 2; // PORT TO REDIRECT PACKETS TO SNORT
-
 
 
 // Ethernet  EtherType field useful values
