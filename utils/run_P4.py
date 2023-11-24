@@ -27,7 +27,7 @@ from time import sleep
 
 import p4runtime_lib.simple_controller
 
-from mycontroller import install_rules, shutdown_switches, read_counters
+from write_rules_to_switch import install_rules, shutdown_switches, read_counters
 
 from mininet.cli import CLI
 from mininet.link import TCLink

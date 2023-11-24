@@ -2,17 +2,17 @@
     "hosts": ["hinternet","h2","h3", "hsnort"],
     "switches": {
         "s1": {
-            "free_table_entries" : 614,
+            "free_table_entries" : 1500,
             "hops_from_internet" : 0,
             "hops_from_host" : 2
         },
         "s2": {
-            "free_table_entries" : 614,
+            "free_table_entries" : 100,
             "hops_from_internet" : 1,
             "hops_from_host" : 1
         },
         "s3": {
-            "free_table_entries" : 614,
+            "free_table_entries" : 200,
             "hops_from_internet" : 2,
             "hops_from_host" : 0
         }
