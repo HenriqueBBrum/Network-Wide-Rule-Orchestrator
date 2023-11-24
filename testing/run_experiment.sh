@@ -10,9 +10,11 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 topology=$1
 output_folder=$2
-n_redirected_packets=$3
-time_threshold=$4
-count_min_size=$5
+ruleset_folder=$3
+
+n_redirected_packets=$4
+time_threshold=$5
+count_min_size=$6
 
 if [ ! -d $output_folder ]
 then
@@ -20,17 +22,22 @@ then
 	exit 1
 fi
 
-if [ -z "$n_redirected_packets" ]
+if [ -z $ruleset_folder ]
+then
+	ruleset_folder="../snort/rules/snort3-registered"
+fi
+
+if [ -z $n_redirected_packets ]
 then
 	n_redirected_packets=10
 fi
 
-if [ -z "$time_threshold" ]
+if [ -z $time_threshold ]
 then
 	time_threshold=10
 fi
 
-if [ -z "$count_min_size" ]
+if [ -z $count_min_size ]
 then
 	count_min_size=1024
 fi
@@ -40,6 +47,9 @@ sed -i -e 's|TIME_THRESHOLD=[^;"]*|TIME_THRESHOLD='$time_threshold'|' ../src/inc
 sed -i -e 's|COUNT_MIN_SIZE=[^;"]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
 
 config_file="$parent_path""/experiment_configuration/""$topology"".json"
+
+
+sed -i -e 's|--rule-path [^ "]*|--rule-path '$ruleset_folder'|' $config_file
 
 mkdir ../snort/logs
 mkdir ../snort/logs/eth0
@@ -67,6 +77,7 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	rm ../snort/logs/hsnort-eth2/*
 
 	cd ../testing
+	exit
 done;
 
 cd ../src
