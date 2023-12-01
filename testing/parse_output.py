@@ -15,7 +15,7 @@ def parse_args():
 
 def main(args):
 	experiments_data = read_experiments_data(args.input_folder)
-	# compare_with_baseline(experiments_data, args.baseline_folder)
+	compare_with_baseline(experiments_data, args.baseline_folder)
 
 
 def read_experiments_data(experiments_data_folder):
@@ -67,18 +67,19 @@ def read_snort_alerts(alert_file_path):
 	return data, counter, no_duplicates_data
 
 def compare_with_baseline(experiments_data, baseline_folder):
-	print("----- Baseline data -----")
 	baseline_data = {}
 	for alert_file in os.listdir(baseline_folder):
 		item_fullpath = os.path.join(baseline_folder, alert_file)
 
-		print(alert_file.split(".")[0])
 		raw_data, rules_counter, no_duplicates_data =  read_snort_alerts(item_fullpath)
 	
-		print(len(raw_data), len(no_duplicates_data))
-		print(rules_counter.most_common(5))
+		
 		baseline_data[alert_file.split(".")[0]]=no_duplicates_data
 
+		print("-----------" + alert_file.split(".")[0] + "-----------")
+		print("Number of alerts for the baseline: ", len(raw_data))
+		print("number of alerts for the evaluation: ", len(experiments_data[alert_file.split(".")[0]]))
+		print("Percent: ", (len(experiments_data[alert_file.split(".")[0]])/len(raw_data)))
 
 if __name__ == '__main__':
     args = parse_args()

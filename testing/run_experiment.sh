@@ -10,11 +10,13 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 topology=$1
 output_folder=$2
-ruleset_folder=$3
 
-n_redirected_packets=$4
-time_threshold=$5
-count_min_size=$6
+n_redirected_packets=$3
+time_threshold=$4
+count_min_size=$5
+
+ruleset_folder=$6
+
 
 if [ ! -d $output_folder ]
 then
@@ -41,6 +43,8 @@ if [ -z $count_min_size ]
 then
 	count_min_size=1024
 fi
+
+echo $time_threshold
 
 sed -i -e 's|MAX_PACKETS=[^;"]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
 sed -i -e 's|TIME_THRESHOLD=[^;"]*|TIME_THRESHOLD='$time_threshold'|' ../src/include/header.p4
@@ -77,7 +81,6 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	rm ../snort/logs/hsnort-eth2/*
 
 	cd ../testing
-	exit
 done;
 
 cd ../src
