@@ -67,11 +67,12 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 
 	cd ../src
 	make clean
-	make TEST_JSON=$config_file
+	make TEST_JSON=$config_file > $output_folder"output.txt"
 
 	IFS='-' read -r -a array <<< "$pcap_name"
 
 	mkdir $output_folder${array[0]}
+	mv $output_folder"output.txt" $output_folder${array[0]}
 
 	sudo chmod -R a+rwx ../snort/logs/*
 	cp -r ../snort/logs/* $output_folder/"${array[0]}"

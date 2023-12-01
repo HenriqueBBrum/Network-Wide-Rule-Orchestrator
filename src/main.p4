@@ -239,14 +239,14 @@ control MyEgress(inout headers hdr, inout metadata meta, inout standard_metadata
     counter(64, CounterType.packets) cloned_to_ids;
 
     apply {
+        standard_metadata.egress_spec = DEFAULT_PORT;
+
         if (hdr.ip.v4.isValid() || hdr.ip.v6.isValid()){
-            standard_metadata.egress_spec = DEFAULT_PORT;
             if(standard_metadata.instance_type == PKT_INSTANCE_TYPE_INGRESS_CLONE){
                 standard_metadata.egress_spec = PORT_TO_IDS;
             }
-
-            cloned_to_ids.count((bit<32>) standard_metadata.egress_spec);
         }
+        cloned_to_ids.count((bit<32>) standard_metadata.egress_spec);
 
 
     }

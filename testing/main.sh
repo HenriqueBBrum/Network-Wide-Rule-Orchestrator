@@ -28,8 +28,7 @@ fi
 
 for size in {512,1024,4096,16348}; do
 
-	results_folder=${output_folder}10_50_${size}_registered
+	results_folder=${output_folder}10_50_${size}_registered/
 	mkdir $results_folder
-	./run_experiment.sh $topology $results_folder 10 50 $size %ruleset_folder 
+	./run_experiment.sh $topology $results_folder 10 50 $size $ruleset_folder
 done;
-
