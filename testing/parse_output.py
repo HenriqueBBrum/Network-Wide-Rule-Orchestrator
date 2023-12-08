@@ -2,7 +2,7 @@ import json
 import os
 import argparse
 from collections import Counter
-
+# import pandas
 
 def parse_args():
     parser = argparse.ArgumentParser(description='P4Runtime Controller')
@@ -15,12 +15,19 @@ def parse_args():
 
 def main(args):
 	experiments_data = read_experiments_data(args.input_folder)
-	compare_with_baseline(experiments_data, args.baseline_folder)
+	# pandas_dict_list = []
+	for key, data in experiments_data.items():
+		print(key)
+		print("Alerts: ", len(data["alerts"]), "  Packets: ", data["packets_redirected"])
+		print(" ----- ------- -----")
+		# pandas_dict_list.append({"pcap": key, "alerts": len(data["alerts"]), "packets": data["packets_redirected"]})
+		#print(data["packets_redirected"])
+	# compare_with_baseline(experiments_data, args.baseline_folder)
+	# print(pandas_dict_list)
 
 
 def read_experiments_data(experiments_data_folder):
 	folder_data = {}
-	print("----- Experiments data -----")
 	for item in os.listdir(experiments_data_folder):
 		item_fullpath = os.path.join(experiments_data_folder, item)
 		if os.path.isfile(item_fullpath):
@@ -29,20 +36,20 @@ def read_experiments_data(experiments_data_folder):
 		no_duplicates_data = {}
 		raw_data = []
 		rules_counter = Counter()
-		print(item)
 		for subdir in os.listdir(item_fullpath):
+			if os.path.isfile(os.path.join(item_fullpath, subdir)):
+				continue
+
 			alert_file = os.path.join(item_fullpath, subdir) + "/alert_json.txt"
 			data, counter, no_duplicates =  read_snort_alerts(alert_file)
-
 			raw_data.extend(data)
 			rules_counter.update(counter)
 			for key, value in no_duplicates.items():
 				if key not in no_duplicates_data:
 					no_duplicates_data[key] = value
 
-		print(len(raw_data), len(no_duplicates_data))
-		print(rules_counter.most_common(5))
-		folder_data[item]=no_duplicates_data
+		packets_redirected = read_amt_of_redirected_pkts(os.path.join(item_fullpath, "output.txt"))
+		folder_data[item]={"alerts": no_duplicates_data, "counter": rules_counter, "packets_redirected": packets_redirected}
 	return folder_data
 
 def read_snort_alerts(alert_file_path):
@@ -65,6 +72,24 @@ def read_snort_alerts(alert_file_path):
 			print("JSON error: ", e)
 	file.close()
 	return data, counter, no_duplicates_data
+
+
+def read_amt_of_redirected_pkts(output_file_path):
+	with open(output_file_path) as output_file:
+		packets_redirected = 0
+		get_data = False
+		previous_line = ""
+		for line in output_file:
+			if "Counter name:  MyEgress.cloned_to_ids" in previous_line and "Index (port):  index: 2" in line:
+				get_data = True
+			
+			if "packet_count" in line and get_data==1:
+				packets_redirected += int(line.split()[1])
+				get_data = False
+
+			previous_line = line
+	return packets_redirected
+
 
 def compare_with_baseline(experiments_data, baseline_folder):
 	baseline_data = {}
