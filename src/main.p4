@@ -45,7 +45,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         meta.ids_table_match = true;
     }
 
-    /**** Tables ****/
+    /**** IDS Tables ****/
 
     table ipv4_ids {
         actions = {
@@ -84,6 +84,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         default_action = pass();
         counters = ipv6_ids_table_hit_counter;
     }
+
+    /****
 
     /**** Independent actions ****/
 
