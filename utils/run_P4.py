@@ -178,9 +178,9 @@ class ExerciseRunner:
         self.switches = topo['switches']
         self.links = self.parse_links(topo['links'])
 
-        # self.logger('Reading test file.')
-        # with open(test_file, 'r') as f:
-        #     self.test = json.load(f)
+        self.logger('Reading test file.')
+        with open(test_file, 'r') as f:
+            self.test = json.load(f)
 
         # Ensure all the needed directories exist and are directories
         for dir_name in [log_dir, pcap_dir]:
@@ -365,25 +365,25 @@ class ExerciseRunner:
             print('')
 
 
-        # install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries"], self.test["start_nodes_strategy"])
-        # print(self.test)
-        # print()
+        install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries"], self.test["start_nodes_strategy"])
+        print(self.test)
+        print()
 
-        CLI(self.net)
+        # CLI(self.net)
 
-        # print('Starting test')
-        # for device in self.test['devices']:
-        #     dev_instance = self.net.get(device.get('name'))
-        #     print(device.get('name'))
-        #     for cmd in device['cmds']:
-        #         print(cmd)
-        #         dev_instance.cmd(cmd)
-        #
-        #     sleep(1)
-        #
-        # print('Ending test')
-        # read_counters(self.test["p4info"])
-        # shutdown_switches()
+        print('Starting test')
+        for device in self.test['devices']:
+            dev_instance = self.net.get(device.get('name'))
+            print(device.get('name'))
+            for cmd in device['cmds']:
+                print(cmd)
+                dev_instance.cmd(cmd)
+        
+            sleep(1)
+        
+        print('Ending test')
+        read_counters(self.test["p4info"])
+        shutdown_switches()
 
 
 

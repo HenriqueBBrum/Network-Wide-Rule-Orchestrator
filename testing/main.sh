@@ -24,8 +24,7 @@ then
 	ruleset_folder="../snort/rules/snort3-registered"
 fi
 
-# Update topology in Makefile
-sed -i -e 's|TOPO = topologies/[^/"]*|TOPO = topologies/'$topology'|' ../src/Makefile
+
 
 for time_threshold in {10}; do
 	for size in {4096,16384}; do

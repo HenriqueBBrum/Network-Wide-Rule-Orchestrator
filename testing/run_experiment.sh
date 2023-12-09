@@ -44,8 +44,8 @@ then
 	count_min_size=1024
 fi
 
-echo $time_threshold
-
+# Update topology in Makefile
+sed -i -e 's|TOPO = topologies/[^/"]*|TOPO = topologies/'$topology'|' ../src/Makefile
 
 # Update data plane parameters
 sed -i -e 's|MAX_PACKETS=[^;"]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
@@ -62,6 +62,7 @@ mkdir ../snort/logs
 mkdir ../snort/logs/eth0
 mkdir ../snort/logs/hsnort-eth1
 mkdir ../snort/logs/hsnort-eth2
+mkdir ../snort/logs/hsnort-eth3
 
 # Emulate with each PCAP in the CIC-IDS 2017 dataset
 for pcap in ../../CICIDS2017-PCAPS/*; do
@@ -83,6 +84,7 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	rm ../snort/logs/eth0/*
 	rm ../snort/logs/hsnort-eth1/*
 	rm ../snort/logs/hsnort-eth2/*
+	rm ../snort/logs/hsnort-eth3/*
 
 	cd ../testing
 done;

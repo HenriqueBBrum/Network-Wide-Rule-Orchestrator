@@ -15,8 +15,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def main():
     udp_port = 50000
-    pkt = Ether(dst='ff:ff:ff:ff:ff:ff')/IP(dst="192.168.10.17")
-    sendpfast(pkt, pps=2, loop=10, iface="s2-eth3")
+    pkt = Ether(dst='ff:ff:ff:ff:ff:ff')/IP(dst="192.168.10.5")
+    sendpfast(pkt, pps=2, loop=10, iface="eth0")
 
 
 

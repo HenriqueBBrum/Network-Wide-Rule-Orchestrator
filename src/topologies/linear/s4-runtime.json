@@ -22,11 +22,51 @@
     {
       "table": "MyIngress.ipv4_lpm",
       "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.50", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 4
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.51", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 5
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
         "hdr.ip.v4.dstAddr": ["172.16.0.0", 16]
       },
       "action_name": "MyIngress.ipv4_forward",
       "action_params": {
         "port": 1
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["205.174.165.68", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 4
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["205.174.165.66", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 5
       }
     }
   ]
