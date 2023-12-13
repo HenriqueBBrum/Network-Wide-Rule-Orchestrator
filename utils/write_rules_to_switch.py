@@ -61,12 +61,12 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, star
                 name=switch_id,
                 address='127.0.0.1:5005'+str(num_id),
                 device_id=num_id-1,
-                proto_dump_file='logs/'+switch_id+'-p4runtime-requests.txt')
+                proto_dump_file='logs/'+switch_id+'-p4runtime-requests_ids.txt')
 
             # Send master arbitration update message to establish this controller as master
             switch.MasterArbitrationUpdate()
             print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
-            switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
+            # switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
             switches[switch_id] = switch
             # Writes for each switch its rules
             write_rules(p4info_helper, switch, rules)

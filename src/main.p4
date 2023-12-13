@@ -27,7 +27,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
     register<bit<16>>(1) global_window_tracker;
 
-    // Variables used in IDS fowarding logic
+    // Variables used in IDS forwarding logic
     bit<10> current_min = 0;
 
     // Variables for flow expiring mechanism
@@ -261,12 +261,7 @@ control MyEgress(inout headers hdr, inout metadata meta, inout standard_metadata
     counter(64, CounterType.packets) cloned_to_ids;
 
     apply {
-        if (hdr.ip.v4.isValid() || hdr.ip.v6.isValid()){
-            if(standard_metadata.instance_type == PKT_INSTANCE_TYPE_INGRESS_CLONE){
-                standard_metadata.egress_spec = PORT_TO_IDS;
-            }
-        }
-        cloned_to_ids.count((bit<32>) standard_metadata.egress_spec);
+        cloned_to_ids.count((bit<32>) standard_metadata.egress_port);
     }
 }
 

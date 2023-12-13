@@ -378,9 +378,9 @@ class ExerciseRunner:
             for cmd in device['cmds']:
                 print(cmd)
                 dev_instance.cmd(cmd)
-        
+
             sleep(1)
-        
+
         print('Ending test')
         read_counters(self.test["p4info"])
         shutdown_switches()

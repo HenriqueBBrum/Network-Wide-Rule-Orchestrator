@@ -86,6 +86,7 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	rm ../snort/logs/hsnort-eth2/*
 	rm ../snort/logs/hsnort-eth3/*
 
+	exit 
 	cd ../testing
 done;
 

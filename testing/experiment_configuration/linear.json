@@ -17,6 +17,6 @@
 
 		{
 			"name":"hinternet",
-			"cmds":["tcpreplay-edit --mtu-trunc --duration=60 -i eth0 -p1000 ../../CICIDS2017-PCAPS/Wednesday-WorkingHours.pcap"]
+			"cmds":["tcpreplay-edit --mtu-trunc --duration=60 -i eth0 -p1000 ../../CICIDS2017-PCAPS/Friday-WorkingHours.pcap"]
 		}]
 }
