@@ -1,6 +1,6 @@
 {
     "hosts": {
-        "hinternet": {"ip": "10.0.1.1/24", "mac": "08:00:00:00:00:01"},
+        "hsource": {"ip": "10.0.1.1/24", "mac": "08:00:00:00:00:01"},
         "hsnort": {"ip": "10.0.4.4/24", "mac": "08:00:00:00:00:02"},
 
         "hdns": {"ip": "192.168.10.3/24", "mac": "08:00:00:00:03:33"},
@@ -30,7 +30,7 @@
                 "cli_input": "topologies/mirror_cmds.txt"}
     },
     "links": [
-        ["hinternet", "s1-p1"], ["s1-p3", "s2-p1"], ["s2-p3", "s3-p1"], ["s3-p3", "s4-p1"],
+        ["hsource", "s1-p1"], ["s1-p3", "s2-p1"], ["s2-p3", "s3-p1"], ["s3-p3", "s4-p1"],
         ["hdns", "s2-p4"], ["hwin81", "s2-p5"], ["hwinvst", "s2-p6"], ["hwin7pr", "s2-p7"], ["hub1664b", "s2-p8"],
         ["hwi1032b", "s3-p4"], ["hwi1064b", "s3-p5"], ["hub1632b", "s3-p6"], ["hub1464b", "s3-p7"], ["hub1432b", "s3-p8"], ["hmac", "s3-p9"],
         ["hwebserver", "s4-p4"], ["hubuntu12", "s4-p5"],

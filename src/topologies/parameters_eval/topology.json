@@ -1,6 +1,6 @@
 {
     "hosts": {
-        "hinternet": {"ip": "10.0.1.1/24", "mac": "08:00:00:00:01:11",
+        "hsource": {"ip": "10.0.1.1/24", "mac": "08:00:00:00:01:11",
                "commands":["route add default gw 10.0.1.10 dev eth0",
                            "arp -i eth0 -s 10.0.1.10 08:00:00:00:01:00"]},
         "h2": {"ip": "10.0.2.2/24", "mac": "08:00:00:00:02:22",
@@ -19,7 +19,7 @@
         "s3": {"cli_input": "topologies/mirror_cmds.txt"}
     },
     "links": [
-        ["hinternet", "s1-p1"], ["s1-p3", "s2-p1"], ["s2-p3", "s3-p1"],
+        ["hsource", "s1-p1"], ["s1-p3", "s2-p1"], ["s2-p3", "s3-p1"],
         ["hsnort", "s1-p2"], ["hsnort", "s2-p2"], ["hsnort", "s3-p2"],
         ["h2", "s3-p4"], ["h3", "s3-p5"]
     ]

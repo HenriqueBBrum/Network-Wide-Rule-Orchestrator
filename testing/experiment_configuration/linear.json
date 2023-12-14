@@ -14,9 +14,8 @@
 			   "snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort3-registered -A alert_json --lua \"alert_json = {file = true}\" -l ../snort/logs/hsnort-eth2 -i hsnort-eth2 &> ../snort/logs/hsnort-eth2/output.txt &",
 			   "snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort3-registered -A alert_json --lua \"alert_json = {file = true}\" -l ../snort/logs/hsnort-eth3 -i hsnort-eth3 &> ../snort/logs/hsnort-eth3/output.txt &"]
 		},
-
 		{
-			"name":"hinternet",
+			"name":"hsource",
 			"cmds":["tcpreplay-edit --mtu-trunc --duration=15 -i eth0 -p1000 ../../CICIDS2017-PCAPS/Friday-WorkingHours.pcap"]
 		}]
 }

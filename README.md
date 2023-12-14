@@ -17,9 +17,9 @@ vagrant up
 The guest folder should be named CICIDS2017-PCAPS and placed at the same level as this repo's folder. The image below illustrates this:
 
 
-Follow this guide to understand how to create shared folders with VirtualBox 
+Follow this guide to understand how to create shared folders with VirtualBox
 
-### 4. Log into the machine and clone this repository 
+### 4. Log into the machine and clone this repository
 
 ```
 sudo apt update
@@ -68,7 +68,7 @@ hsnort
 	snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort-community -A alert_json --lua "alert_json = {file = true}" -l ../snort/logs -i hsnort-eth2 --lua > stdout_output.txt
 
 
-hinternet:
+hattacker:
 
 	tcpreplay -i eth0 -p100 ../../CICIDS2017-PCAPS/Monday...pcap
 
@@ -76,4 +76,4 @@ hinternet:
 command to test baseline slerts by snort
 
 
-snort -c snort.lua --rule-ath ../rule/path -R pcap_file.pcap -A alert_json --lua "alert_json = {file = true}" 
+snort -c snort.lua --rule-ath ../rule/path -R pcap_file.pcap -A alert_json --lua "alert_json = {file = true}"

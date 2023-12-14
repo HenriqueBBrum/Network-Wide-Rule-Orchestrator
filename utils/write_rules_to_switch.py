@@ -87,7 +87,7 @@ def distribute_rules(network_info, rules, strategy):
     device_table_entries_map = {}
     initial_nodes, not_initial_nodes = [], []
 
-    metric = "hops_from_internet" if strategy == "PRIORITIZE_OUTER" else "hops_from_host"
+    metric = "hops_from_suspicious_device" if strategy == "PRIORITIZE_OUTER" else "hops_from_endhost"
 
     network = nx.DiGraph()
     network.add_node("start")
@@ -105,8 +105,6 @@ def distribute_rules(network_info, rules, strategy):
 
     # Creates the edges according to the existent links
     for link in network_info["links"]:
-        if 'h' in link[0] or 'h' in link[1]:
-            continue
         network.add_edge(link[0], link[1], weight=network.nodes[link[0]]["free_table_entries"])
         network.add_edge(link[1], link[0], weight=network.nodes[link[1]]["free_table_entries"])
 
