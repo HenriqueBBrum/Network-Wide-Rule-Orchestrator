@@ -14,9 +14,9 @@
                            "arp -i eth0 -s 10.0.4.40 08:00:00:00:04:00"]}
     },
     "switches": {
-        "s1": {"cli_input": "topologies/parameters_eval/mirror_cmds.txt"},
-        "s2": {"cli_input": "topologies/parameters_eval/mirror_cmds.txt"},
-        "s3": {"cli_input": "topologies/parameters_eval/mirror_cmds.txt"}
+        "s1": {"cli_input": "topologies/mirror_cmds.txt"},
+        "s2": {"cli_input": "topologies/mirror_cmds.txt"},
+        "s3": {"cli_input": "topologies/mirror_cmds.txt"}
     },
     "links": [
         ["hinternet", "s1-p1"], ["s1-p3", "s2-p1"], ["s2-p3", "s3-p1"],
