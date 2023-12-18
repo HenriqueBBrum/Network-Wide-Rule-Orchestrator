@@ -4,19 +4,8 @@
             "free_table_entries" : 1500,
             "hops_from_suspicious_device" : 0,
             "hops_from_endhost" : 2
-        },
-        "s2": {
-            "free_table_entries" : 0,
-            "hops_from_suspicious_device" : 1,
-            "hops_from_endhost" : 1
-        },
-        "s3": {
-            "free_table_entries" : 0,
-            "hops_from_suspicious_device" : 2,
-            "hops_from_endhost" : 0
         }
     },
     "links": [
-        ["s1", "s2"], ["s2", "s3"]
     ]
 }
