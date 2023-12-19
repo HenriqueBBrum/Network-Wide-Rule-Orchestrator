@@ -206,7 +206,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     // **** Aply block ****
     apply {
         received.count((bit<32>)standard_metadata.ingress_port);
-
+        //  standard_metadata.egress_spec = DEFAULT_PORT;
         if (hdr.ip.v4.isValid() || hdr.ip.v6.isValid()){
             bit<128> src_IP = 0;
             bit<128> dst_IP = 0;
@@ -259,7 +259,6 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
 control MyEgress(inout headers hdr, inout metadata meta, inout standard_metadata_t standard_metadata){
     counter(64, CounterType.packets) cloned_to_ids;
-
     apply {
         cloned_to_ids.count((bit<32>) standard_metadata.egress_port);
     }
