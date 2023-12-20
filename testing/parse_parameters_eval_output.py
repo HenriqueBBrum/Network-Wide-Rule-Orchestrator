@@ -11,6 +11,7 @@ baseline_packets_redirected = {"registered": {"Monday": 11709971, "Tuesday": 115
 def parse_args():
     parser = argparse.ArgumentParser(description='P4Runtime Controller')
     parser.add_argument('--input-folder', help='Folder containing the parameters evaluation folder', type=str, required=True)
+    parser.add_argument('--output-folder', help='Folder to save the resulting CSV', type=str, default=".", required=False)
     parser.add_argument('--baseline-folder', help='Folder containing the baseline results', 
     	type=str, default="../baseline_alerts/CICIDS2017/alerts_snort3-registered", required=False)
 
@@ -43,10 +44,11 @@ def main(args):
 					 data["packets_redirected"]/baseline_packets_redirected[folder_name_elements[3]][key]
 			csv_data.append(csv_line)
 
-			print(csv_line)
+		break
 
 	keys = csv_data[0].keys()
-	with open('parameters_evaluation.csv', 'w') as file:
+	output_file = args.output_folder + "/parameters_evaluation.csv"
+	with open(output_file, 'w') as file:
 	    w = csv.DictWriter(file, keys)
 	    w.writeheader()
 
