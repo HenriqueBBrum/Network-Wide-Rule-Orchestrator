@@ -19,13 +19,14 @@ def parse_args():
 
 def main(args):
 	baseline_data = read_baseline(args.baseline_folder)
+	print(baseline_data)
 	csv_data = []
 	for item in os.listdir(args.input_folder):
 		item_fullpath = os.path.join(args.input_folder, item)
 		if os.path.isfile(item_fullpath):
 			continue
 
-		folder_name_elements = item.split("_")
+		folder_name_elements = item.split("_") # 10_10_1024_registered
 		experiments_data = read_experiments_data(item_fullpath)
 
 		for key, data in experiments_data.items():
@@ -42,10 +43,13 @@ def main(args):
 					 data["packets_redirected"]/baseline_packets_redirected[folder_name_elements[3]][key]
 			csv_data.append(csv_line)
 
+			print(csv_line)
+
 	keys = csv_data[0].keys()
 	with open('parameters_evaluation.csv', 'w') as file:
 	    w = csv.DictWriter(file, keys)
 	    w.writeheader()
+
 	    for line in csv_data:
 	    	w.writerow(line)
 			
