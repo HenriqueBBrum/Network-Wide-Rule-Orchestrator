@@ -27,7 +27,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
     register<bit<16>>(1) global_window_tracker;
 
-    // Variables used in IDS fowarding logic
+    // Variables used in IDS forwarding logic
     bit<10> current_min = 0;
 
     // Variables for flow expiring mechanism
@@ -45,7 +45,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         meta.ids_table_match = true;
     }
 
-    /**** Tables ****/
+    /**** IDS Tables ****/
 
     table ipv4_ids {
         actions = {
@@ -84,6 +84,29 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         default_action = pass();
         counters = ipv6_ids_table_hit_counter;
     }
+
+    /**** Fowarding Table ****/
+
+    action drop() {
+       mark_to_drop(standard_metadata);
+   }
+
+   action ipv4_forward(egressSpec_t port) {
+       standard_metadata.egress_spec = port;
+   }
+
+   table ipv4_lpm {
+       key = {
+           hdr.ip.v4.dstAddr: lpm;
+       }
+       actions = {
+           ipv4_forward;
+           drop;
+           NoAction;
+       }
+       size = 1024;
+       default_action = drop();
+   }
 
     /**** Independent actions ****/
 
@@ -183,20 +206,19 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     // **** Aply block ****
     apply {
         received.count((bit<32>)standard_metadata.ingress_port);
-        standard_metadata.egress_spec = DEFAULT_PORT;
-
+        //  standard_metadata.egress_spec = DEFAULT_PORT;
         if (hdr.ip.v4.isValid() || hdr.ip.v6.isValid()){
             bit<128> src_IP = 0;
             bit<128> dst_IP = 0;
 
             if (hdr.ip.v4.isValid()){
+                ipv4_lpm.apply();
                 src_IP = (bit<128>)hdr.ip.v4.srcAddr;
                 dst_IP = (bit<128>)hdr.ip.v4.dstAddr;
             }else if(hdr.ip.v6.isValid()){
                 src_IP = hdr.ip.v6.srcAddr;
                 dst_IP = hdr.ip.v6.dstAddr;
             }
-
 
             // Checks if packet match an IDS rule and determines the approriate egress port
             if (hdr.ip.v4.isValid()){
@@ -237,18 +259,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
 control MyEgress(inout headers hdr, inout metadata meta, inout standard_metadata_t standard_metadata){
     counter(64, CounterType.packets) cloned_to_ids;
-
     apply {
-        standard_metadata.egress_spec = DEFAULT_PORT;
-
-        if (hdr.ip.v4.isValid() || hdr.ip.v6.isValid()){
-            if(standard_metadata.instance_type == PKT_INSTANCE_TYPE_INGRESS_CLONE){
-                standard_metadata.egress_spec = PORT_TO_IDS;
-            }
-        }
-        cloned_to_ids.count((bit<32>) standard_metadata.egress_spec);
-
-
+        cloned_to_ids.count((bit<32>) standard_metadata.egress_port);
     }
 }
 

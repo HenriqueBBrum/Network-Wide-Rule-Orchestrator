@@ -61,12 +61,12 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, star
                 name=switch_id,
                 address='127.0.0.1:5005'+str(num_id),
                 device_id=num_id-1,
-                proto_dump_file='logs/'+switch_id+'-p4runtime-requests.txt')
+                proto_dump_file='logs/'+switch_id+'-p4runtime-requests_ids.txt')
 
             # Send master arbitration update message to establish this controller as master
             switch.MasterArbitrationUpdate()
-            print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
-            switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
+            # print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
+            # switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
             switches[switch_id] = switch
             # Writes for each switch its rules
             write_rules(p4info_helper, switch, rules)
@@ -87,7 +87,7 @@ def distribute_rules(network_info, rules, strategy):
     device_table_entries_map = {}
     initial_nodes, not_initial_nodes = [], []
 
-    metric = "hops_from_internet" if strategy == "PRIORITIZE_OUTER" else "hops_from_host"
+    metric = "hops_from_suspicious_device" if strategy == "PRIORITIZE_OUTER" else "hops_from_endhost"
 
     network = nx.DiGraph()
     network.add_node("start")
@@ -105,8 +105,6 @@ def distribute_rules(network_info, rules, strategy):
 
     # Creates the edges according to the existent links
     for link in network_info["links"]:
-        if 'h' in link[0] or 'h' in link[1]:
-            continue
         network.add_edge(link[0], link[1], weight=network.nodes[link[0]]["free_table_entries"])
         network.add_edge(link[1], link[0], weight=network.nodes[link[1]]["free_table_entries"])
 
@@ -224,6 +222,24 @@ def read_counters(p4info):
                     print('\nIndex (port): ', entry.index, end=' ')
                     print("Data: ", entry.data)
 
+
+def read_direct_counters(p4info, table_name):
+    p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
+    for switch_id, switch in switches.items():
+        print('\n----- Reading ipv4_ids table counters for %s -----' % switch.name)
+        for response in switch.ReadDirectCounters(table_id = p4info_helper.get_tables_id(table_name)):
+            print("Number of entries in direct counters ", len(response.entities))
+            for entity in response.entities:
+                entry = entity.direct_counter_entry
+                if entry.data.packet_count > 0:
+                    table_entry = entry.table_entry
+                    table_name = p4info_helper.get_tables_name(table_entry.table_id)
+                    print('Direct counter entry info:\n  ', table_name, end = ' ')
+                    for m in table_entry.match:
+                        print(p4info_helper.get_match_field_name(table_name, m.field_id), end=' ')
+                        print('%r' % (p4info_helper.get_match_field_value(m),), end=' ')
+
+                    print("\nData: ", entry.data)
 
 
 if __name__ == '__main__':

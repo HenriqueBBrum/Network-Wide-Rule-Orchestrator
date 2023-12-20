@@ -27,7 +27,7 @@ from time import sleep
 
 import p4runtime_lib.simple_controller
 
-from write_rules_to_switch import install_rules, shutdown_switches, read_counters
+from write_rules_to_switch import install_rules, shutdown_switches, read_counters, read_direct_counters
 
 from mininet.cli import CLI
 from mininet.link import TCLink
@@ -369,7 +369,7 @@ class ExerciseRunner:
         print(self.test)
         print()
 
-        #CLI(self.net)
+        # CLI(self.net)
 
         print('Starting test')
         for device in self.test['devices']:
@@ -383,6 +383,7 @@ class ExerciseRunner:
 
         print('Ending test')
         read_counters(self.test["p4info"])
+        read_direct_counters(self.test["p4info"], "ipv4_ids")
         shutdown_switches()
 
 

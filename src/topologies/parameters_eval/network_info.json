@@ -1,0 +1,11 @@
+{
+    "switches": {
+        "s1": {
+            "free_table_entries" : 1500,
+            "hops_from_suspicious_device" : 0,
+            "hops_from_endhost" : 2
+        }
+    },
+    "links": [
+    ]
+}
