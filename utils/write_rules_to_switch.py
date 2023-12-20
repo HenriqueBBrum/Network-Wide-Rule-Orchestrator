@@ -65,8 +65,8 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, star
 
             # Send master arbitration update message to establish this controller as master
             switch.MasterArbitrationUpdate()
-            # print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
-            # switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
+            print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
+            switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
             switches[switch_id] = switch
             # Writes for each switch its rules
             write_rules(p4info_helper, switch, rules)

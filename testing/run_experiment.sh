@@ -29,6 +29,7 @@ then
 	ruleset_folder="../snort/rules/snort3-registered"
 fi
 
+# Check if variables were set up; otherwise use default value
 if [ -z $n_redirected_packets ]
 then
 	n_redirected_packets=10
@@ -60,9 +61,16 @@ sed -i -e 's|--rule-path [^ "]*|--rule-path '$ruleset_folder'|' $config_file
 # Create snort log folders
 mkdir ../snort/logs
 mkdir ../snort/logs/eth0
-mkdir ../snort/logs/hsnort-eth1
-mkdir ../snort/logs/hsnort-eth2
-mkdir ../snort/logs/hsnort-eth3
+echo $topology
+if [ $topology != "parameters_eval" ]; then
+	mkdir ../snort/logs/hsnort-eth1
+	mkdir ../snort/logs/hsnort-eth2
+	mkdir ../snort/logs/hsnort-eth3
+	if [ $topology != "linear" ]; then
+		mkdir ../snort/logs/hsnort-eth4
+	fi 
+fi
+
 
 # Emulate with each PCAP in the CIC-IDS 2017 dataset
 for pcap in ../../CICIDS2017-PCAPS/*; do
@@ -80,11 +88,7 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 
 	sudo chmod -R a+rwx ../snort/logs/*
 	cp -r ../snort/logs/* $output_folder/"${array[0]}"
-
-	rm ../snort/logs/eth0/*
-	rm ../snort/logs/hsnort-eth1/*
-	rm ../snort/logs/hsnort-eth2/*
-	rm ../snort/logs/hsnort-eth3/*
+	rm -r ../snort/logs/*
 
 	exit 
 	cd ../testing

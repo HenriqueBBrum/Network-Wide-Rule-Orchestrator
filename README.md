@@ -58,6 +58,13 @@ cd testing && ./run_experiments linear ../experiments_output
 ```
 
 
+### Parameters eval testing
+
+uncomment    switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
+			 print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
+
+uncomment         standard_metadata.egress_spec = DEFAULT_PORT;
+comment ipv4_lpm.apply();
 
 commands to run in each host
 

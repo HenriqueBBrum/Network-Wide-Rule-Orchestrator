@@ -366,7 +366,6 @@ class ExerciseRunner:
 
 
         install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries"], self.test["start_nodes_strategy"])
-        print(self.test)
         print()
 
         # CLI(self.net)
@@ -383,7 +382,7 @@ class ExerciseRunner:
 
         print('Ending test')
         read_counters(self.test["p4info"])
-        read_direct_counters(self.test["p4info"], "ipv4_ids")
+        # read_direct_counters(self.test["p4info"], "ipv4_ids")
         shutdown_switches()
 
 
