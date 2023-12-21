@@ -60,20 +60,19 @@ sed -i -e 's|--rule-path [^ "]*|--rule-path '$ruleset_folder'|' $config_file
 
 # Create snort log folders
 mkdir ../snort/logs
-mkdir ../snort/logs/eth0
-echo $topology
-if [ $topology != "parameters_eval" ]; then
-	mkdir ../snort/logs/hsnort-eth1
-	mkdir ../snort/logs/hsnort-eth2
-	mkdir ../snort/logs/hsnort-eth3
-	if [ $topology != "linear" ]; then
-		mkdir ../snort/logs/hsnort-eth4
-	fi 
-fi
 
 
 # Emulate with each PCAP in the CIC-IDS 2017 dataset
 for pcap in ../../CICIDS2017-PCAPS/*; do
+	mkdir ../snort/logs/eth0
+	if [ $topology != "parameters_eval" ]; then
+		mkdir ../snort/logs/hsnort-eth1
+		mkdir ../snort/logs/hsnort-eth2
+		mkdir ../snort/logs/hsnort-eth3
+		if [ $topology != "linear" ]; then
+			mkdir ../snort/logs/hsnort-eth4
+		fi 
+	fi
 	pcap_name=$(echo $pcap | sed "s/.*\///")
 	sed -i -e 's|CICIDS2017-PCAPS\/[^\"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
 
@@ -90,7 +89,6 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	cp -r ../snort/logs/* $output_folder/"${array[0]}"
 	rm -r ../snort/logs/*
 
-	exit 
 	cd ../testing
 done;
 
