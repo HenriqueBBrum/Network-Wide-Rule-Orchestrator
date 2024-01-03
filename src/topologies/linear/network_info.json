@@ -1,27 +1,50 @@
 {
+    "hosts": {
+        "hsource": {"ip": "10.0.1.1/24"},
+        "hsnort": {"ip": "10.0.4.4/24"},
+
+        "hdns": {"ip": "192.168.10.3/24"},
+        "hwin81": {"ip": "192.168.10.5/24"},
+        "hwinvst": {"ip": "192.168.10.8/24"},
+        "hwin7pr": {"ip": "192.168.10.9/24"},
+        "hub1664b": {"ip": "192.168.10.12/24"},
+
+        "hwi1032b": {"ip": "192.168.10.14/24"},
+        "hwi1064b": {"ip": "192.168.10.15/24"},
+        "hub1632b": {"ip": "192.168.10.16/24"},
+        "hub1432b": {"ip": "192.168.10.19/24"},
+        "hub1464b": {"ip": "192.168.10.17/24"},
+        "hmac": {"ip": "192.168.10.25/24"},
+
+        "hwebserver": {"ip": "192.168.10.50/24"},
+        "hubuntu12": {"ip": "192.168.10.51/24"}
+    },
     "switches": {
         "s1": {
             "free_table_entries" : 1500,
-            "hops_from_suspicious_device" : 0,
+            "hops_from_source" : 0,
             "hops_from_endhost" : 1
         },
         "s2": {
             "free_table_entries" : 0,
-            "hops_from_suspicious_device" : 1,
+            "hops_from_source" : 1,
             "hops_from_endhost" : 0
         },
         "s3": {
             "free_table_entries" : 0,
-            "hops_from_suspicious_device" : 2,
+            "hops_from_source" : 2,
             "hops_from_endhost" : 0
         },
         "s4": {
             "free_table_entries" : 0,
-            "hops_from_suspicious_device" : 3,
+            "hops_from_source" : 3,
             "hops_from_endhost" : 0
         }
     },
     "links": [
-        ["s1", "s2"], ["s2", "s3"], ["s3", "s4"]
+        ["s1", "s2"], ["s2", "s3"], ["s3", "s4"],
+        ["hdns", "s2"], ["hwin81", "s2"], ["hwinvst", "s2"], ["hwin7pr", "s2"], ["hub1664b", "s2"],
+        ["hwi1032b", "s3"], ["hwi1064b", "s3"], ["hub1632b", "s3"], ["hub1464b", "s3"], ["hub1432b", "s3"], ["hmac", "s3"],
+        ["hwebserver", "s4"], ["hubuntu12", "s4"],
     ]
 }

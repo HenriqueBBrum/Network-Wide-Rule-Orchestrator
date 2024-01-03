@@ -87,9 +87,6 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
     /**** Fowarding Table ****/
 
-    action drop() {
-       mark_to_drop(standard_metadata);
-   }
 
    action ipv4_forward(egressSpec_t port) {
        standard_metadata.egress_spec = port;
@@ -101,11 +98,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
        }
        actions = {
            ipv4_forward;
-           drop;
-           NoAction;
        }
        size = 1024;
-       default_action = drop();
    }
 
     /**** Independent actions ****/
@@ -206,13 +200,13 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     // **** Aply block ****
     apply {
         received.count((bit<32>)standard_metadata.ingress_port);
-        standard_metadata.egress_spec = DEFAULT_PORT;
+        // standard_metadata.egress_spec = DEFAULT_PORT;
         if (hdr.ip.v4.isValid() || hdr.ip.v6.isValid()){
             bit<128> src_IP = 0;
             bit<128> dst_IP = 0;
 
             if (hdr.ip.v4.isValid()){
-                // ipv4_lpm.apply();
+                ipv4_lpm.apply();
                 src_IP = (bit<128>)hdr.ip.v4.srcAddr;
                 dst_IP = (bit<128>)hdr.ip.v4.dstAddr;
             }else if(hdr.ip.v6.isValid()){

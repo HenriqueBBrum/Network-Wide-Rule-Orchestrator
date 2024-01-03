@@ -16,6 +16,6 @@
 		},
 		{
 			"name":"hsource",
-			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/Friday-WorkingHours.pcap"]
+			"cmds":["tcpreplay-edit --mtu-trunc --duration=30 -i eth0 -p1000 ../../CICIDS2017-PCAPS/Wednesday-WorkingHours.pcap"]
 		}]
 }

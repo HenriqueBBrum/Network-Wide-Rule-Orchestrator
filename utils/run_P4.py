@@ -382,7 +382,7 @@ class ExerciseRunner:
 
         print('Ending test')
         read_counters(self.test["p4info"])
-        # read_direct_counters(self.test["p4info"], "ipv4_ids")
+        read_direct_counters(self.test["p4info"], "ipv4_ids")
         shutdown_switches()
 
 
@@ -407,9 +407,6 @@ def get_args():
 
 
 if __name__ == '__main__':
-    # from mininet.log import setLogLevel
-    # setLogLevel("info")
-
     args = get_args()
     exercise = ExerciseRunner(args.topo, args.test, args.log_dir, args.pcap_dir,
                               args.switch_json, args.behavioral_exe, args.quiet)

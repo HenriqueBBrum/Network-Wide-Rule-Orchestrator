@@ -5,12 +5,6 @@
   "table_entries": [
     {
       "table": "MyIngress.ipv4_lpm",
-      "default_action": true,
-      "action_name": "MyIngress.drop",
-      "action_params": { }
-    },
-    {
-      "table": "MyIngress.ipv4_lpm",
       "match": {
         "hdr.ip.v4.dstAddr": ["192.168.10.0", 27]
       },
