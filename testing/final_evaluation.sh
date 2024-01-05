@@ -10,13 +10,7 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 topology=$1
 output_folder=$2
-
-n_redirected_packets=$3
-time_threshold=$4
-count_min_size=$5
-
-ruleset_folder=$6
-
+ruleset_folder=$3
 
 
 if [ ! -d $output_folder ]
@@ -30,29 +24,10 @@ then
 	ruleset_folder="../snort/rules/snort3-registered"
 fi
 
-# Check if variables were set up; otherwise use default value
-if [ -z $n_redirected_packets ]
-then
-	n_redirected_packets=10
-fi
-
-if [ -z $time_threshold ]
-then
-	time_threshold=10
-fi
-
-if [ -z $count_min_size ]
-then
-	count_min_size=1024
-fi
 
 # Update topology in Makefile
 sed -i -e 's|TOPO = topologies/[^/"]*|TOPO = topologies/'$topology'|' ../src/Makefile
 
-# Update data plane parameters
-sed -i -e 's|MAX_PACKETS=[^;"]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
-sed -i -e 's|TIME_THRESHOLD=[^;"]*|TIME_THRESHOLD='$time_threshold'|' ../src/include/header.p4
-sed -i -e 's|COUNT_MIN_SIZE=[^;"]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
 
 config_file="$parent_path""/experiment_configuration/""$topology"".json"
 
@@ -62,6 +37,10 @@ sed -i -e 's|--rule-path [^ "]*|--rule-path '$ruleset_folder'|' $config_file
 # Create snort log folders
 mkdir ../snort/logs
 
+
+# Update data plane parameters
+time_threshold=10
+sed -i -e 's|TIME_THRESHOLD=[^;"]*|TIME_THRESHOLD='$time_threshold'|' ../src/include/header.p4
 
 # Emulate with each PCAP in the CIC-IDS 2017 dataset
 for pcap in ../../CICIDS2017-PCAPS/*; do
@@ -76,6 +55,28 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	fi
 	pcap_name=$(echo $pcap | sed "s/.*\///")
 	sed -i -e 's|CICIDS2017-PCAPS\/[^\"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
+
+	weekday=$(echo $pcap_name | sed "s|-.*||")
+	if [ $weekday == "Monday" ]; then
+		n_redirected_packets=200
+		count_min_size=16384
+	elif [ $weekday == "Tuesday" ]; then
+		n_redirected_packets=100
+		count_min_size=16384
+	elif [ $weekday == "Wednesday" ]; then
+		n_redirected_packets=25
+		count_min_size=16384
+	elif [ $weekday == "Thursday" ]; then
+		n_redirected_packets=50
+		count_min_size=4096
+	else
+		n_redirected_packets=25
+		count_min_size=4096
+	fi
+
+	# Update data plane parameters
+	sed -i -e 's|MAX_PACKETS=[^;"]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
+	sed -i -e 's|COUNT_MIN_SIZE=[^;"]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
 
 	cd ../src
 	make clean
