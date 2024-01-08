@@ -25,23 +25,7 @@ from p4runtime_lib.switch import ShutdownAllSwitchConnections
 switches = {}
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='P4Runtime Controller')
-    parser.add_argument('--p4info', help='p4info proto in text format from p4c',
-                        type=str, required=False, default='./build/main.p4.p4info.txt')
-    parser.add_argument('--bmv2_json', help='BMv2 JSON file from p4c',
-                        type=str, required=False, default='./build/main.json')
-    parser.add_argument('--network_info', help='Network information',
-                        type=str, required=True)
-    parser.add_argument('--table_entries', help='Table entries file',
-                        type=str, required=True)
-    parser.add_argument('--start_nodes_strategy', help='BMv2 JSON file from p4c',
-                        type=str, required=False, default='PRIORITIZE_OUTER')
-
-    return parser.parse_args()
-
-
-def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, start_nodes_strategy):
+def install_rules(p4info, bmv2_json, network_info_file, rule_distribution_scheme, table_entries_file, start_nodes_strategy):
     # Instantiate a P4Runtime helper from the p4info file
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
 
@@ -52,7 +36,7 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, star
         rules = f.read().splitlines()
 
     # !!!!!!!!!!!!!!!Validate switch name. Name must be 's<non negative integer>'
-    device_table_entries_map = distribute_rules(network_info, rules, start_nodes_strategy)
+    device_table_entries_map = distribute_rules(network_info, rule_distribution_scheme, rules, start_nodes_strategy)
     try:
         # Create a switch connection object for s1 and s2; this is backed by a P4Runtime gRPC connection.
         for switch_id, rules in device_table_entries_map.items():
@@ -83,7 +67,7 @@ def shutdown_switches():
 
 
 # Determines the subset of rules for each device according to the least safe path from the inital set of nodes
-def distribute_rules(network_info, rules, strategy):
+def distribute_rules(network_info, rule_distribution_scheme, rules, strategy):
     device_table_entries_map = {}
     initial_nodes, not_initial_nodes = [], []
 
@@ -103,8 +87,15 @@ def distribute_rules(network_info, rules, strategy):
         else:
             not_initial_nodes.append(node)
 
+    if rule_distribution_scheme == "simple":
+        for node in not_initial_nodes:
+            device_table_entries_map[node] = []
+        return device_table_entries_map
+
     # Creates the edges according to the existent links
     for link in network_info["links"]:
+        if("h" in link[0] or "h" in link[1]):
+            continue
         network.add_edge(link[0], link[1], weight=network.nodes[link[0]]["free_table_entries"])
         network.add_edge(link[1], link[0], weight=network.nodes[link[1]]["free_table_entries"])
 
@@ -243,15 +234,23 @@ def read_direct_counters(p4info, table_name):
 
 
 if __name__ == '__main__':
-    args = parse_args()
+    parser = argparse.ArgumentParser(description='P4Runtime Controller')
 
-    if not os.path.exists(args.p4info):
-        parser.print_help()
-        print("\np4info file not found: %s\nHave you run 'make'?" % args.p4info)
-        parser.exit(1)
-    if not os.path.exists(args.bmv2_json):
-        parser.print_help()
-        print("\nBMv2 JSON file not found: %s\nHave you run 'make'?" % args.bmv2_json)
-        parser.exit(1)
+    parser.add_argument('--p4info', help='p4info proto in text format from p4c', type=str, required=False, default='./build/main.p4.p4info.txt')
+    parser.add_argument('--bmv2_json', help='BMv2 JSON file from p4c', type=str, required=False, default='./build/main.json')
+    parser.add_argument('--network_info', help='Network information', type=str, required=True)
+    parser.add_argument('--rule_distribution_scheme', help='Distribution of rules scheme', type=str, required=True)
+    parser.add_argument('--table_entries', help='Table entries file', type=str, required=True)
+    parser.add_argument('--start_nodes_strategy', help='BMv2 JSON file from p4c', type=str, required=False, default='PRIORITIZE_OUTER')
 
-    main(args)
+    args = parser.parse_args()
+
+    # if not os.path.exists(args.p4info):
+    #     parser.print_help()
+    #     print("\np4info file not found: %s\nHave you run 'make'?" % args.p4info)
+    #     parser.exit(1)
+    # if not os.path.exists(args.bmv2_json):
+    #     parser.print_help()
+    #     print("\nBMv2 JSON file not found: %s\nHave you run 'make'?" % args.bmv2_json)
+    #     parser.exit(1)
+    install_rules(args.p4info, args.bmv2_json, args.network_info, args.rule_distribution_scheme, args.table_entries, args.start_nodes_strategy)

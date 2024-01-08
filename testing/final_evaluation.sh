@@ -10,13 +10,22 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 topology=$1
 output_folder=$2
-ruleset_folder=$3
+rule_distribution_scheme=$3
+
+ruleset_folder=$4
+
+table_entries="../src/p4_table_entries.config"
 
 
 if [ ! -d $output_folder ]
 then
 	echo "Folder "$output_folder" does not exist"
 	exit 1
+fi
+
+if [ -z $rule_distribution_scheme ]
+then
+	rule_distribution_scheme="distributed"
 fi
 
 if [ -z $ruleset_folder ]
@@ -31,14 +40,21 @@ sed -i -e 's|TOPO = topologies/[^/"]*|TOPO = topologies/'$topology'|' ../src/Mak
 
 config_file="$parent_path""/experiment_configuration/""$topology"".json"
 
-# Update rule path in configuration file
+# Update rule distribution scheme in the configuration file
+if [ $rule_distribution_scheme == "simple" ]; then
+	table_entries="../src/p4onids_compiled_rules.config"
+fi
+sed -i -e 's|\"rule_distribution_scheme\": [^,]*|\"rule_distribution_scheme\": \"'$rule_distribution_scheme'\"|' $config_file
+sed -i -e 's|\"table_entries\": [^,]*|\"table_entries\": \"'$table_entries'\"|' $config_file
+
+# Update the rule path in the configuration file
 sed -i -e 's|--rule-path [^ "]*|--rule-path '$ruleset_folder'|' $config_file
 
-# Create snort log folders
+# Create the snort log folders
 mkdir ../snort/logs
 
 
-# Update data plane parameters
+# Update the data plane time_threshold parameter
 time_threshold=10
 sed -i -e 's|TIME_THRESHOLD=[^;"]*|TIME_THRESHOLD='$time_threshold'|' ../src/include/header.p4
 
@@ -55,7 +71,7 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	fi
 	pcap_name=$(echo $pcap | sed "s/.*\///")
 	sed -i -e 's|CICIDS2017-PCAPS\/[^\"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
-
+	
 	weekday=$(echo $pcap_name | sed "s|-.*||")
 	if [ $weekday == "Monday" ]; then
 		n_redirected_packets=200
@@ -69,26 +85,28 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	elif [ $weekday == "Thursday" ]; then
 		n_redirected_packets=50
 		count_min_size=4096
-	else
+	elif [ $weekday == "Friday" ]; then
 		n_redirected_packets=25
 		count_min_size=4096
 	fi
 
+	echo $time_threshold
+	echo $n_redirected_packets
+	echo $count_min_size
 	# Update data plane parameters
 	sed -i -e 's|MAX_PACKETS=[^;"]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
 	sed -i -e 's|COUNT_MIN_SIZE=[^;"]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
 
+	# Run the experiment
 	cd ../src
 	make clean
 	make TEST_JSON=$config_file > $output_folder"output.txt"
 
-	IFS='-' read -r -a array <<< "$pcap_name"
-
-	mkdir $output_folder${array[0]}
-	mv $output_folder"output.txt" $output_folder${array[0]}
+	mkdir $output_folder${weekday}
+	mv $output_folder"output.txt" $output_folder${weekday}
 
 	sudo chmod -R a+rwx ../snort/logs/*
-	cp -r ../snort/logs/* $output_folder/"${array[0]}"
+	cp -r ../snort/logs/* $output_folder/"${weekday}"
 	rm -r ../snort/logs/*
 
 	cd ../testing

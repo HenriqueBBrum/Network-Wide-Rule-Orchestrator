@@ -4,6 +4,7 @@
 
 	"network_info": "../src/topologies/linear/network_info.json",
 	"table_entries": "../src/p4_table_entries.config",
+	"rule_distribution_scheme": "distributed",
 	"start_nodes_strategy": "PRIORITIZE_OUTER",
 
 	"devices":[
@@ -16,6 +17,6 @@
 		},
 		{
 			"name":"hsource",
-			"cmds":["tcpreplay-edit --mtu-trunc --duration=30 -i eth0 -p1000 ../../CICIDS2017-PCAPS/Wednesday-WorkingHours.pcap"]
+			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/Friday-WorkingHours.pcap"]
 		}]
 }

@@ -21,7 +21,7 @@
     },
     "switches": {
         "s1": {
-            "free_table_entries" : 1500,
+            "free_table_entries" : 1800,
             "hops_from_source" : 0,
             "hops_from_endhost" : 1
         },
@@ -45,6 +45,6 @@
         ["s1", "s2"], ["s2", "s3"], ["s3", "s4"],
         ["hdns", "s2"], ["hwin81", "s2"], ["hwinvst", "s2"], ["hwin7pr", "s2"], ["hub1664b", "s2"],
         ["hwi1032b", "s3"], ["hwi1064b", "s3"], ["hub1632b", "s3"], ["hub1464b", "s3"], ["hub1432b", "s3"], ["hmac", "s3"],
-        ["hwebserver", "s4"], ["hubuntu12", "s4"],
+        ["hwebserver", "s4"], ["hubuntu12", "s4"]
     ]
 }
