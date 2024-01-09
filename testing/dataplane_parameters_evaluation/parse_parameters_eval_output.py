@@ -140,13 +140,11 @@ if __name__ == '__main__':
     args = parse_args()
 
     if not os.path.exists(args.input_folder):
-        parser.print_help()
-        print("\nFolder not found: %s\n" % args.p4info)
-        parser.exit(1)
+        print("\nInput folder not found: %s\n" % args.p4info)
+        exit(1)
 
     if args.baseline_folder and not os.path.exists(args.baseline_folder):
-    	parser.print_help()
-    	print("\nFolder not found: %s\n" % args.p4info)
-    	parser.exit(1)
+    	print("\n Baseline folder not found: %s\n" % args.p4info)
+    	exit(1)
 
     main(args)

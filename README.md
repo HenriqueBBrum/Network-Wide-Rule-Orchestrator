@@ -66,6 +66,8 @@ uncomment    switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv
 uncomment         standard_metadata.egress_spec = DEFAULT_PORT;
 comment ipv4_lpm.apply();
 
+Pass the fullpath to the output folder
+
 commands to run in each host
 
 hsnort
