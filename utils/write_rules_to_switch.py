@@ -245,12 +245,13 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # if not os.path.exists(args.p4info):
-    #     parser.print_help()
-    #     print("\np4info file not found: %s\nHave you run 'make'?" % args.p4info)
-    #     parser.exit(1)
-    # if not os.path.exists(args.bmv2_json):
-    #     parser.print_help()
-    #     print("\nBMv2 JSON file not found: %s\nHave you run 'make'?" % args.bmv2_json)
-    #     parser.exit(1)
+    if not os.path.exists(args.p4info):
+        parser.print_help()
+        print("\np4info file not found: %s\nHave you run 'make'?" % args.p4info)
+        parser.exit(1)
+    if not os.path.exists(args.bmv2_json):
+        parser.print_help()
+        print("\nBMv2 JSON file not found: %s\nHave you run 'make'?" % args.bmv2_json)
+        parser.exit(1)
+
     install_rules(args.p4info, args.bmv2_json, args.network_info, args.rule_distribution_scheme, args.table_entries, args.start_nodes_strategy)

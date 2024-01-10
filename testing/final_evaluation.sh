@@ -1,4 +1,6 @@
 #!/bin/bash
+scriptdir="$(dirname "$0")"
+cd "$scriptdir"
 
 if [ $# -lt 2 ]
 then
@@ -10,8 +12,8 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
 topology=$1
 output_folder=$2
-rule_distribution_scheme=$3
 
+rule_distribution_scheme=$3
 ruleset_folder=$4
 
 table_entries="../src/p4_table_entries.config"
@@ -61,14 +63,12 @@ sed -i -e 's|TIME_THRESHOLD=[^;"]*|TIME_THRESHOLD='$time_threshold'|' ../src/inc
 # Emulate with each PCAP in the CIC-IDS 2017 dataset
 for pcap in ../../CICIDS2017-PCAPS/*; do
 	mkdir ../snort/logs/eth0
-	if [ $topology != "parameters_eval" ]; then
-		mkdir ../snort/logs/hsnort-eth1
-		mkdir ../snort/logs/hsnort-eth2
-		mkdir ../snort/logs/hsnort-eth3
-		if [ $topology != "linear" ]; then
-			mkdir ../snort/logs/hsnort-eth4
-		fi 
-	fi
+	mkdir ../snort/logs/hsnort-eth1
+	mkdir ../snort/logs/hsnort-eth2
+	mkdir ../snort/logs/hsnort-eth3
+	if [ $topology != "linear" ]; then
+		mkdir ../snort/logs/hsnort-eth4
+	fi 
 	pcap_name=$(echo $pcap | sed "s/.*\///")
 	sed -i -e 's|CICIDS2017-PCAPS\/[^\"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
 	

@@ -1,7 +1,11 @@
+#!/bin/bash
+scriptdir="$(dirname "$0")"
+cd "$scriptdir"
+
 cd ../src
 make clean
 
 cd ../experiments_output
 rm -r *
 
-rm -r ../snort/logs/*
+sudo rm -r ../snort/logs/*
