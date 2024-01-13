@@ -9,6 +9,8 @@ then
 fi
 
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+snort_folder=../../snort/
+src_folder=../../src/
 
 topology=$1
 output_folder=$2
@@ -27,7 +29,7 @@ fi
 
 if [ -z $rule_distribution_scheme ]
 then
-	rule_distribution_scheme="distributed"
+	rule_distribution_scheme="firstfit"
 fi
 
 if [ -z $ruleset_folder ]
@@ -55,9 +57,17 @@ sed -i -e 's|--rule-path [^ "]*|--rule-path '$ruleset_folder'|' $config_file
 # Create the snort log folders
 mkdir ../snort/logs
 
-
 # Update the data plane time_threshold parameter
+n_redirected_packets=200
+count_min_size=16384
 time_threshold=10
+echo $n_redirected_packets
+echo $count_min_size
+echo $time_threshold
+
+# Update data plane parameters
+sed -i -e 's|MAX_PACKETS=[^;"]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
+sed -i -e 's|COUNT_MIN_SIZE=[^;"]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
 sed -i -e 's|TIME_THRESHOLD=[^;"]*|TIME_THRESHOLD='$time_threshold'|' ../src/include/header.p4
 
 # Emulate with each PCAP in the CIC-IDS 2017 dataset
@@ -66,42 +76,17 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	mkdir ../snort/logs/hsnort-eth1
 	mkdir ../snort/logs/hsnort-eth2
 	mkdir ../snort/logs/hsnort-eth3
-	if [ $topology != "linear" ]; then
-		mkdir ../snort/logs/hsnort-eth4
-	fi 
+	mkdir ../snort/logs/hsnort-eth4
+
 	pcap_name=$(echo $pcap | sed "s/.*\///")
 	sed -i -e 's|CICIDS2017-PCAPS\/[^\"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
-	
-	weekday=$(echo $pcap_name | sed "s|-.*||")
-	if [ $weekday == "Monday" ]; then
-		n_redirected_packets=200
-		count_min_size=16384
-	elif [ $weekday == "Tuesday" ]; then
-		n_redirected_packets=100
-		count_min_size=16384
-	elif [ $weekday == "Wednesday" ]; then
-		n_redirected_packets=25
-		count_min_size=16384
-	elif [ $weekday == "Thursday" ]; then
-		n_redirected_packets=50
-		count_min_size=4096
-	elif [ $weekday == "Friday" ]; then
-		n_redirected_packets=25
-		count_min_size=4096
-	fi
-
-	echo $time_threshold
-	echo $n_redirected_packets
-	echo $count_min_size
-	# Update data plane parameters
-	sed -i -e 's|MAX_PACKETS=[^;"]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
-	sed -i -e 's|COUNT_MIN_SIZE=[^;"]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
 
 	# Run the experiment
 	cd ../src
 	make clean
 	make TEST_JSON=$config_file > $output_folder"output.txt"
 
+	weekday=$(echo $pcap_name | sed "s|-.*||")
 	mkdir $output_folder${weekday}
 	mv $output_folder"output.txt" $output_folder${weekday}
 
