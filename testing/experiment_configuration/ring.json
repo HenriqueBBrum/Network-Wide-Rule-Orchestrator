@@ -4,8 +4,7 @@
 
 	"network_info": "../src/topologies/ring/network_info.json",
 	"table_entries": "../src/p4_table_entries.config",
-	"rule_distribution_scheme": "distributed",
-	"start_nodes_strategy": "PRIORITIZE_OUTER",
+	"rule_distribution_scheme": "firstfit",
 
 	"devices":[
 		{

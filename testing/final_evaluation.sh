@@ -2,23 +2,17 @@
 scriptdir="$(dirname "$0")"
 cd "$scriptdir"
 
-if [ $# -lt 2 ]
+# File used to evaluate the parameters of the dataplane
+
+if [ $# -lt 1 ]
 then
 	echo "No arguments provided"
 	exit 1
 fi
 
-parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-snort_folder=../../snort/
-src_folder=../../src/
 
-topology=$1
-output_folder=$2
-
-rule_distribution_scheme=$3
-ruleset_folder=$4
-
-table_entries="../src/p4_table_entries.config"
+output_folder=$1
+ruleset_folder=$2
 
 
 if [ ! -d $output_folder ]
@@ -27,77 +21,18 @@ then
 	exit 1
 fi
 
-if [ -z $rule_distribution_scheme ]
-then
-	rule_distribution_scheme="firstfit"
-fi
-
 if [ -z $ruleset_folder ]
 then
 	ruleset_folder="../snort/rules/snort3-registered"
 fi
 
 
-# Update topology in Makefile
-sed -i -e 's|TOPO = topologies/[^/"]*|TOPO = topologies/'$topology'|' ../src/Makefile
-
-
-config_file="$parent_path""/experiment_configuration/""$topology"".json"
-
-# Update rule distribution scheme in the configuration file
-if [ $rule_distribution_scheme == "simple" ]; then
-	table_entries="../src/p4onids_compiled_rules.config"
-fi
-sed -i -e 's|\"rule_distribution_scheme\": [^,]*|\"rule_distribution_scheme\": \"'$rule_distribution_scheme'\"|' $config_file
-sed -i -e 's|\"table_entries\": [^,]*|\"table_entries\": \"'$table_entries'\"|' $config_file
-
-# Update the rule path in the configuration file
-sed -i -e 's|--rule-path [^ "]*|--rule-path '$ruleset_folder'|' $config_file
-
-# Create the snort log folders
-mkdir ../snort/logs
-
-# Update the data plane time_threshold parameter
-n_redirected_packets=200
-count_min_size=16384
-time_threshold=10
-echo $n_redirected_packets
-echo $count_min_size
-echo $time_threshold
-
-# Update data plane parameters
-sed -i -e 's|MAX_PACKETS=[^;"]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
-sed -i -e 's|COUNT_MIN_SIZE=[^;"]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
-sed -i -e 's|TIME_THRESHOLD=[^;"]*|TIME_THRESHOLD='$time_threshold'|' ../src/include/header.p4
-
-# Emulate with each PCAP in the CIC-IDS 2017 dataset
-for pcap in ../../CICIDS2017-PCAPS/*; do
-	mkdir ../snort/logs/eth0
-	mkdir ../snort/logs/hsnort-eth1
-	mkdir ../snort/logs/hsnort-eth2
-	mkdir ../snort/logs/hsnort-eth3
-	mkdir ../snort/logs/hsnort-eth4
-
-	pcap_name=$(echo $pcap | sed "s/.*\///")
-	sed -i -e 's|CICIDS2017-PCAPS\/[^\"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
-
-	# Run the experiment
-	cd ../src
-	make clean
-	make TEST_JSON=$config_file > $output_folder"output.txt"
-
-	weekday=$(echo $pcap_name | sed "s|-.*||")
-	mkdir $output_folder${weekday}
-	mv $output_folder"output.txt" $output_folder${weekday}
-
-	sudo chmod -R a+rwx ../snort/logs/*
-	cp -r ../snort/logs/* $output_folder/"${weekday}"
-	rm -r ../snort/logs/*
-
-	cd ../testing
+for time_threshold in {10,25,50}; do
+	for size in {256,512,1024,4096,16834}; do
+		for packets_redirected in {10,25,50,100,200,400,800}; do
+			results_folder=${output_folder}${packets_redirected}_${time_threshold}_${size}_registered/
+			mkdir $results_folder
+			./run_parameter_experiment.sh $results_folder $packets_redirected $time_threshold $size $ruleset_folder
+		done;
+	done;
 done;
-
-cd ../src
-make clean
-
-stty erase ^H

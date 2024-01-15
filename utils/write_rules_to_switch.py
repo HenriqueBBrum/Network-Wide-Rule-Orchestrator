@@ -58,27 +58,45 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, rule
 
 
     table_entries_subsets = create_table_entries_subsets(dag_topology, switches_info, hosts_info, ordered_rules)
-    ## Distributions calculated manualy
-    ## LINEAR FF 1500
     device_table_entries_map = {}
-    device_table_entries_map["s1"] = table_entries_subsets["generic"]
-    for subset in table_entries_subsets["networks"].values():
-        device_table_entries_map["s1"].extend(subset)
-    for key, subset in table_entries_subsets.items():
-        if (key!="generic" and key !="networks"):
-            device_table_entries_map["s1"].extend(subset)
+    ## Distributions calculated manualy
+    ## LINEAR FIRSTFIT 100%
+    # device_table_entries_map["s1"] = table_entries_subsets["generic"]
+    # for subset in table_entries_subsets["networks"].values():
+    #     device_table_entries_map["s1"].extend(subset)
+    # for key, subset in table_entries_subsets.items():
+    #     if (key!="generic" and key !="networks"):
+    #         device_table_entries_map["s1"].extend(subset)
+    # device_table_entries_map["s2"] = []
+    # device_table_entries_map["s3"] = []
+    # device_table_entries_map["s4"] = []
+    # device_table_entries_map["s5"] = []
+    ## LINEAR FIRSTFIT 100%
+    ## LINEAR BESTFIT 100%
+    # device_table_entries_map["s1"] = table_entries_subsets["generic"]
+    # device_table_entries_map["s1"].extend(table_entries_subsets["s1"])
 
+    # device_table_entries_map["s2"] = []
+    # for subset in table_entries_subsets["networks"].values():
+    #     device_table_entries_map["s2"].extend(subset)
+    # device_table_entries_map["s2"].extend(table_entries_subsets["s2"])
+
+    # device_table_entries_map["s3"] = []
+    # device_table_entries_map["s4"] = []
+    # device_table_entries_map["s5"] = []
+    ## LINEAR BESTFIT 100%
+    ## LINEAR P4ONIDS
+    device_table_entries_map["s1"] = ordered_rules[0:network_info["switches"]["s1"]["free_table_entries"]]
     device_table_entries_map["s2"] = []
     device_table_entries_map["s3"] = []
     device_table_entries_map["s4"] = []
     device_table_entries_map["s5"] = []
-    ## END OF LINEAR FF 1500
-
-
+    ## LINEAR P4ONIDS
 
     try:
         # Create a switch connection object for s1 and s2; this is backed by a P4Runtime gRPC connection.
-        for switch_id, rules in device_table_entries_map.items():
+        for switch_id, rules in device_table_entries_map.items(): 
+            print(switch_id, " Space: ", network_info["switches"][switch_id]["free_table_entries"], " Usage: ", len(rules))
             num_id = int(switch_id.split('s')[1])
             switch = p4runtime_lib.bmv2.Bmv2SwitchConnection(
                 name=switch_id,
@@ -94,6 +112,7 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, rule
             # Writes for each switch its rules
             write_rules(p4info_helper, switch, rules)
             read_table_rules(p4info_helper, switch)
+            print()
 
     except KeyboardInterrupt:
         print("Shutting down.")
@@ -126,34 +145,37 @@ def create_table_entries_subsets(network_topology, switches_info, hosts_info, ru
     table_entries_subsets["generic"] = []
     table_entries_subsets["networks"] = {}
     for rule in rules:
-        if (rule["dstMask"]=="0.0.0.0"):
-            table_entries_subsets["generic"].append(rule)
-        elif(rule["dstMask"]=="255.255.255.255"):
-            if (rule["dstAddr"]=="255.255.255.255"):
+        try:
+            if (rule["dstMask"]=="0.0.0.0"):
                 table_entries_subsets["generic"].append(rule)
-            else:
-                table_entries_subsets[hosts_info[rule["dstAddr"]+"/24"]].append(rule)
-        elif(rule["dstMask"]!="0.0.0.0" and rule["dstMask"]!="255.255.255.255"):
-            dependent_switches = set()
-            for host, switch in hosts_info.items():
-                if (ipaddress.ip_address(host.split("/")[0]) in ipaddress.ip_network(ipaddress.IPv4Network(rule["dstAddr"]+"/"+rule["dstMask"]))):
-                    dependent_switches.add(switch)
-
-            dependent_switches = list(dependent_switches)
-            dependent_switches.sort()
-            if (len(dependent_switches)>1):
-                lca_switch = dependent_switches[0]
-                i=0
-                while i<len(dependent_switches):
-                    lca_switch = nx.lowest_common_ancestor(network_topology, lca_switch, dependent_switches[i])
-                    i+=1
-                network_subset_id = lca_switch+"+"+"-".join(dependent_switches)
-                if (network_subset_id not in table_entries_subsets["networks"]):
-                    table_entries_subsets["networks"][network_subset_id] = [rule]
+            elif(rule["dstMask"]=="255.255.255.255"):
+                if (rule["dstAddr"]=="255.255.255.255"):
+                    table_entries_subsets["generic"].append(rule)
                 else:
-                    table_entries_subsets["networks"][network_subset_id].append(rule)
-            else:
-                table_entries_subsets[dependent_switches[0]].append(rule)
+                    table_entries_subsets[hosts_info[rule["dstAddr"]+"/24"]].append(rule)
+            elif(rule["dstMask"]!="0.0.0.0" and rule["dstMask"]!="255.255.255.255"):
+                dependent_switches = set()
+                for host, switch in hosts_info.items():
+                    if (ipaddress.ip_address(host.split("/")[0]) in ipaddress.ip_network(ipaddress.IPv4Network(rule["dstAddr"]+"/"+rule["dstMask"]))):
+                        dependent_switches.add(switch)
+
+                dependent_switches = list(dependent_switches)
+                dependent_switches.sort()
+                if (len(dependent_switches)>1):
+                    lca_switch = dependent_switches[0]
+                    i=0
+                    while i<len(dependent_switches):
+                        lca_switch = nx.lowest_common_ancestor(network_topology, lca_switch, dependent_switches[i])
+                        i+=1
+                    network_subset_id = lca_switch+"+"+"-".join(dependent_switches)
+                    if (network_subset_id not in table_entries_subsets["networks"]):
+                        table_entries_subsets["networks"][network_subset_id] = [rule]
+                    else:
+                        table_entries_subsets["networks"][network_subset_id].append(rule)
+                else:
+                    table_entries_subsets[dependent_switches[0]].append(rule)
+        except Exception as e:
+            print("Error in subset: ", e.args)
 
     for key, subset in table_entries_subsets.items():
         if key == "networks":
@@ -194,10 +216,6 @@ def get_rule_fields(rule):
 
     return rule_fields
 
-
-# def bestfit_like_approach():
-
-# def firstfit_like_approach(network_topology, switches_memory_info, table_entries_subsets):
 
 # Determines the subset of rules for each device according to the least safe path from the inital set of nodes
 # def distribute_rules(network_info, rules):

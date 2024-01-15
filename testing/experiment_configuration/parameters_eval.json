@@ -5,7 +5,6 @@
 	"network_info": "../src/topologies/parameters_eval/network_info.json",
 	"table_entries": "../src/p4_table_entries.config",
 	"rule_distribution_scheme": "simple",
-	"start_nodes_strategy": "PRIORITIZE_OUTER",
 
 	"devices":[
 		{
