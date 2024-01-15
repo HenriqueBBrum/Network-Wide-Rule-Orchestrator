@@ -27,12 +27,14 @@ then
 fi
 
 
-for time_threshold in {10,25,50}; do
-	for size in {256,512,1024,4096,16834}; do
-		for packets_redirected in {10,25,50,100,200,400,800}; do
-			results_folder=${output_folder}${packets_redirected}_${time_threshold}_${size}_registered/
+for topology in {"linear","tree","ring"}; do
+	for rule_distribution_scheme in {"simple","firstfit","bestfit"}; do
+		for available_space in {100,66,33}; do
+			amt_of_table_entries=$(wc -l < $table_entries_file)
+			amount_of_space_per_sw=$((amt_of_table_entries*(100/available_space)))
+			results_folder=${output_folder}${topology}_${rule_distribution_scheme}_${available_space}_registered/
 			mkdir $results_folder
-			./run_parameter_experiment.sh $results_folder $packets_redirected $time_threshold $size $ruleset_folder
+			./run_final_eval_experiment.sh $toology $results_folder $rule_distribution_scheme $amount_of_space_per_sw $table_entries_file $ruleset_folder
 		done;
 	done;
 done;
