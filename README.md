@@ -86,3 +86,6 @@ command to test baseline slerts by snort
 
 
 snort -c snort.lua --rule-ath ../rule/path -R pcap_file.pcap -A alert_json --lua "alert_json = {file = true}"
+
+
+### Understanding the configuration files

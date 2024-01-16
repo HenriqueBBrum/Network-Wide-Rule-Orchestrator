@@ -1,5 +1,4 @@
-{
-    
+{  
     "hosts": {
         "hsource": {"ip": "10.0.1.10/24"},
         "hsnort": {"ip": "10.0.1.20/24"},
@@ -53,7 +52,7 @@
         ["hsource", "s1"], ["s1", "s2"], ["s1", "s3"], ["s2", "s4"],  ["s2", "s5"],
         ["hfirewall", "s1"],
         ["hwebserver", "s3"], ["hubuntu12", "s3"],
-        ["hdns", "s4"], ["hwin81", "s4"], ["hwinvst", "s4"], ["hwin7pr", "s4"], ["hub1664b", "s4"], ["hwi1032b", "s4"], ["hwi1064b", "s4"], ["hub1632b", "s4"], 
+        ["hdns", "s4"], ["hwin81", "s4"], ["hwinvst", "s4"], ["hwin7pr", "s4"], ["hub1664b", "s4"], ["hwi1032b", "s4"], ["hwi1064b", "s4"], ["hub1632b", "s4"],
         ["hub1464b", "s5"], ["hub1432b", "s5"], ["hmac", "s5"]
     ]
 }
