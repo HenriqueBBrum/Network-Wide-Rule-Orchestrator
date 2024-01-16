@@ -60,18 +60,18 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, rule
     table_entries_subsets = create_table_entries_subsets(dag_topology, switches_info, hosts_info, ordered_rules)
     device_table_entries_map = {}
     ## Distributions calculated manualy
-    ## LINEAR FIRSTFIT 100%
-    # device_table_entries_map["s1"] = table_entries_subsets["generic"]
-    # for subset in table_entries_subsets["networks"].values():
-    #     device_table_entries_map["s1"].extend(subset)
-    # for key, subset in table_entries_subsets.items():
-    #     if (key!="generic" and key !="networks"):
-    #         device_table_entries_map["s1"].extend(subset)
-    # device_table_entries_map["s2"] = []
-    # device_table_entries_map["s3"] = []
-    # device_table_entries_map["s4"] = []
-    # device_table_entries_map["s5"] = []
-    ## LINEAR FIRSTFIT 100%
+    ## LINEAR FIRSTFIT
+    device_table_entries_map["s1"] = table_entries_subsets["generic"]
+    device_table_entries_map["s1"].extend(table_entries_subsets["s1"])
+    for subset in table_entries_subsets["networks"].values():
+        device_table_entries_map["s1"].extend(subset)
+    device_table_entries_map["s1"].extend(table_entries_subsets["s2"])
+    device_table_entries_map["s2"] = device_table_entries_map["s1"][network_info["switches"]["s1"]["free_table_entries"]:len(device_table_entries_map["s1"])]
+    device_table_entries_map["s1"] = device_table_entries_map["s1"][0:network_info["switches"]["s1"]["free_table_entries"]]
+    device_table_entries_map["s3"] = []
+    device_table_entries_map["s4"] = []
+    device_table_entries_map["s5"] = []
+    ## LINEAR FIRSTFIT
     ## LINEAR BESTFIT 100%
     # device_table_entries_map["s1"] = table_entries_subsets["generic"]
     # device_table_entries_map["s1"].extend(table_entries_subsets["s1"])
@@ -86,11 +86,11 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, rule
     # device_table_entries_map["s5"] = []
     ## LINEAR BESTFIT 100%
     ## LINEAR P4ONIDS
-    device_table_entries_map["s1"] = ordered_rules[0:network_info["switches"]["s1"]["free_table_entries"]]
-    device_table_entries_map["s2"] = []
-    device_table_entries_map["s3"] = []
-    device_table_entries_map["s4"] = []
-    device_table_entries_map["s5"] = []
+    # device_table_entries_map["s1"] = ordered_rules[0:network_info["switches"]["s1"]["free_table_entries"]]
+    # device_table_entries_map["s2"] = []
+    # device_table_entries_map["s3"] = []
+    # device_table_entries_map["s4"] = []
+    # device_table_entries_map["s5"] = []
     ## LINEAR P4ONIDS
 
     try:
