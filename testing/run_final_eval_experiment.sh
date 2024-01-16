@@ -1,6 +1,6 @@
 #!/bin/bash
 scriptdir="$(dirname "$0")"
-cd "$scriptdir"
+cd $scriptdir
 
 if [ $# -lt 6 ]
 then
@@ -27,22 +27,22 @@ then
 	exit 1
 fi
 
-config_file="$parent_path""/experiment_configuration/""$topology"".json"
+config_file=$parent_path"/experiment_configuration/"$topology".json"
 
-# Update the rule path in the configuration file
-sed -i -e 's|--rule-path [^ "]*|--rule-path '$ruleset_folder'|' $config_file
+# Update the rule's path in the configuration file
+sed -i -e 's|--rule-path [^ ]*|--rule-path '$ruleset_folder'|' $config_file
 
+# Update the table entries file in the configuration file
 sed -i -e 's|"table_entries_file": [^,]*|"table_entries_file": "'$table_entries_file'"|' $config_file
+
+# Update the table entries distribution scheme in the configuration file
 sed -i -e 's|"table_entries_distribution_scheme": [^,]*|"table_entries_distribution_scheme": "'$table_entries_distribution_scheme'"|' $config_file
 
 # Update topology in Makefile
-sed -i -e 's|TOPO = topologies/[^/"]*|TOPO = topologies/'$topology'|' ../src/Makefile
+sed -i -e 's|TOPO = topologies/[^/]*|TOPO = topologies/'$topology'|' ../src/Makefile
 
 # Update available memory space in sswitches in the "network_info" file
-sed -i -e 's|"free_table_entries" : [^,]*|"free_table_entries" : '$amount_of_space_per_sw'|' ../src/topologies/"$topology"/network_info.json 
-
-# Create the snort log folders
-mkdir ../snort/logs
+sed -i -e 's|"free_table_entries" : [^,]*|"free_table_entries" : '$amount_of_space_per_sw'|' "../src/topologies/"$topology"/network_info.json"
 
 echo $ruleset_folder
 echo $table_entries_file
@@ -58,9 +58,12 @@ echo $time_threshold
 echo $count_min_size
 
 # Update data plane parameters
-sed -i -e 's|MAX_PACKETS=[^;"]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
-sed -i -e 's|COUNT_MIN_SIZE=[^;"]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
-sed -i -e 's|TIME_THRESHOLD=[^;"]*|TIME_THRESHOLD='$time_threshold'|' ../src/include/header.p4
+sed -i -e 's|MAX_PACKETS=[^;]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
+sed -i -e 's|COUNT_MIN_SIZE=[^;]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
+sed -i -e 's|TIME_THRESHOLD=[^;]*|TIME_THRESHOLD='$time_threshold'|' ../src/include/header.p4
+
+# Create the snort log folders
+mkdir ../snort/logs
 
 # Emulate with each PCAP in the CIC-IDS 2017 dataset
 for pcap in ../../CICIDS2017-PCAPS/*; do
@@ -71,7 +74,7 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	mkdir ../snort/logs/hsnort-eth4
 
 	pcap_name=$(echo $pcap | sed "s/.*\///")
-	sed -i -e 's|CICIDS2017-PCAPS\/[^\"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
+	sed -i -e 's|CICIDS2017-PCAPS\/[^"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
 
 	# Run the experiment
 	cd ../src
@@ -79,11 +82,11 @@ for pcap in ../../CICIDS2017-PCAPS/*; do
 	make TEST_JSON=$config_file > $output_folder"output.txt"
 
 	weekday=$(echo $pcap_name | sed "s|-.*||")
-	mkdir $output_folder${weekday}
-	mv $output_folder"output.txt" $output_folder${weekday}
+	mkdir $output_folder/$weekday
+	mv $output_folder"output.txt" $output_folder/$weekday
 
 	sudo chmod -R a+rwx ../snort/logs/*
-	cp -r ../snort/logs/* $output_folder/"${weekday}"
+	cp -r ../snort/logs/* $output_folder/$weekday
 	rm -r ../snort/logs/*
 
 	cd ../testing

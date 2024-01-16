@@ -1,7 +1,7 @@
 {
     "switches": {
         "s1": {
-            "free_table_entries" : 1500,
+            "free_table_entries" : 1465,
             "hops_from_source" : 0,
             "hops_from_endhost" : 0
         }

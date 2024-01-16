@@ -54,7 +54,7 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, tabl
 
     for link in network_info["links"]:
         if("h" in link[0]):
-            dag_topology.add_edge(link[1], link[0]) 
+            dag_topology.add_edge(link[1], link[0])
         else:
             dag_topology.add_edge(link[0], link[1])
 
@@ -105,8 +105,8 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, tabl
     print("\n------------------ Begin offloading -----------------------")
     try:
         # Create a switch connection object for s1 and s2; this is backed by a P4Runtime gRPC connection.
-        for switch_id, rules in device_table_entries_map.items(): 
-            print(switch_id, " Space: ", network_info["switches"][switch_id]["free_table_entries"], " Usage: ", len(rules))
+        for switch_id, rules in device_table_entries_map.items():
+            print(switch_id, " Space: ", network_info["switches"][switch_id]["free_table_entries"], " Usage for NIDS table entries: ", len(rules))
             num_id = int(switch_id.split('s')[1])
             switch = p4runtime_lib.bmv2.Bmv2SwitchConnection(
                 name=switch_id,
@@ -129,6 +129,7 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, tabl
     except grpc.RpcError as e:
         printGrpcError(e)
 
+# Returns the information regarding what hosts are connected to what switches
 def get_network_info(network_info):
     switches_info = {}
     hosts_info = {}
@@ -150,6 +151,7 @@ def get_network_info(network_info):
 
     return switches_info, hosts_info
 
+# Delegates the table entries to the switches according to the destination IP and the location of the hosts in the network
 def create_table_entries_subsets(network_topology, switches_info, hosts_info, rules):
     table_entries_subsets = {key: [] for key in switches_info}
     table_entries_subsets["generic"] = []
