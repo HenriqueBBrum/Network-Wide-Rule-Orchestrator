@@ -4,7 +4,7 @@ cd "$scriptdir"
 
 if [ $# -lt 1 ]
 then
-	echo "No arguments provided"
+	echo "Missing arguments"
 	exit 1
 fi
 
@@ -13,20 +13,23 @@ snort_folder=../../snort/
 src_folder=../../src/
 
 
-topology="parameters_eval"
 output_folder=$1
-
-n_redirected_packets=$2
-time_threshold=$3
-count_min_size=$4
-
-ruleset_folder=$5
+ruleset_folder=$2
+topology="parameters_eval"
+n_redirected_packets=$3
+time_threshold=$4
+count_min_size=$5
 
 
 if [ ! -d $output_folder ]
 then
 	echo "Folder "$output_folder" does not exist"
 	exit 1
+fi
+
+if [ -z $ruleset_folder ]
+then
+	ruleset_folder=../snort/rules/snort3-registered # Only ../snort since this is used in the src folder
 fi
 
 # Check if variables were set up; otherwise use default value
@@ -43,12 +46,6 @@ fi
 if [ -z $count_min_size ]
 then
 	count_min_size=1024
-fi
-
-
-if [ -z $ruleset_folder ]
-then
-	ruleset_folder=../snort/rules/snort3-registered # Only ../snort since this is used in  the src folder
 fi
 
 

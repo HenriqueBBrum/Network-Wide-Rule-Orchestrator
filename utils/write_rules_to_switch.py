@@ -21,12 +21,7 @@ import p4runtime_lib.helper
 from p4runtime_lib.error_utils import printGrpcError
 from p4runtime_lib.switch import ShutdownAllSwitchConnections
 
-
-switches = {}
-
-
-
-def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, rule_distribution_scheme):
+def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, table_entries_distribution_scheme):
     # Instantiate a P4Runtime helper from the p4info file
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
 
@@ -37,8 +32,11 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, rule
         rules = f.read().splitlines()
 
     switches_info, hosts_info = get_network_info(network_info)
+    print("-------------------")
+    print("Switches and hosts:")
     print(switches_info)
     print(hosts_info)
+    print("-------------------")
     parsed_rules = [get_rule_fields(rule) for rule in rules]
     ordered_rules = sorted(parsed_rules, key=lambda rule: rule['priority'], reverse=True)
 
@@ -56,10 +54,25 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, rule
         else:
             dag_topology.add_edge(link[0], link[1])
 
-
     table_entries_subsets = create_table_entries_subsets(dag_topology, switches_info, hosts_info, ordered_rules)
+    print("\n------------------ Table entries per switch -----------------------")
+    for key, subset in table_entries_subsets.items():
+        if key == "networks":
+            for k, sub in subset.items():
+                print("Network table entries subset. Switch: ", k, "Table entries length: ", len(sub))
+                print(sub[0:5])
+        else:
+            print("Switch: ", key, "Table entries length: ", len(subset))
+            print(subset[0:5])
     device_table_entries_map = {}
     ## Distributions calculated manualy
+    ## LINEAR P4ONIDS
+    # device_table_entries_map["s1"] = ordered_rules[0:network_info["switches"]["s1"]["free_table_entries"]]
+    # device_table_entries_map["s2"] = []
+    # device_table_entries_map["s3"] = []
+    # device_table_entries_map["s4"] = []
+    # device_table_entries_map["s5"] = []
+    ## LINEAR P4ONIDS
     ## LINEAR FIRSTFIT
     device_table_entries_map["s1"] = table_entries_subsets["generic"]
     device_table_entries_map["s1"].extend(table_entries_subsets["s1"])
@@ -85,14 +98,7 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, rule
     # device_table_entries_map["s4"] = []
     # device_table_entries_map["s5"] = []
     ## LINEAR BESTFIT 100%
-    ## LINEAR P4ONIDS
-    # device_table_entries_map["s1"] = ordered_rules[0:network_info["switches"]["s1"]["free_table_entries"]]
-    # device_table_entries_map["s2"] = []
-    # device_table_entries_map["s3"] = []
-    # device_table_entries_map["s4"] = []
-    # device_table_entries_map["s5"] = []
-    ## LINEAR P4ONIDS
-
+    print("\n------------------ Begin offloading -----------------------")
     try:
         # Create a switch connection object for s1 and s2; this is backed by a P4Runtime gRPC connection.
         for switch_id, rules in device_table_entries_map.items(): 
@@ -108,7 +114,6 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, rule
             switch.MasterArbitrationUpdate()
             # print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
             # switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
-            switches[switch_id] = switch
             # Writes for each switch its rules
             write_rules(p4info_helper, switch, rules)
             read_table_rules(p4info_helper, switch)
@@ -176,16 +181,6 @@ def create_table_entries_subsets(network_topology, switches_info, hosts_info, ru
                     table_entries_subsets[dependent_switches[0]].append(rule)
         except Exception as e:
             print("Error in subset: ", e.args)
-
-    for key, subset in table_entries_subsets.items():
-        if key == "networks":
-            for k, sub in subset.items():
-                print(k, len(sub))
-                print(sub[0:5])
-        else:
-            print(key, len(subset))
-            print(subset[0:5])
-
     return table_entries_subsets
 
 
@@ -278,7 +273,6 @@ def write_rules(p4info_helper, switch, rules):
                 action_name="MyIngress."+rule["action"])
         switch.WriteTableEntry(table_entry)
 
-
 # Don't add table matches with "don't care values", including 0.0.0.0 IPs and 0->65535 port ranges
 def build_match_fields(rule_fields, ip_version=4):
     match_fields = {}
@@ -298,7 +292,6 @@ def build_match_fields(rule_fields, ip_version=4):
     match_fields["meta.flags"] = int(rule_fields["flags"], 2)
 
     return match_fields
-
 
 def read_table_rules(p4info_helper, switch):
     print('\n----- Reading tables rules for %s -----' % switch.name)
@@ -323,7 +316,6 @@ def read_table_rules(p4info_helper, switch):
             print()
             count+=1
 
-
 def read_counters(p4info):
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
     for switch_id, switch in switches.items():
@@ -336,7 +328,6 @@ def read_counters(p4info):
                     print('Counter name: ', p4info_helper.get_counters_name(entry.counter_id), end=' ')
                     print('\nIndex (port): ', entry.index, end=' ')
                     print("Data: ", entry.data)
-
 
 def read_direct_counters(p4info, table_name):
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
@@ -356,11 +347,8 @@ def read_direct_counters(p4info, table_name):
 
                     print("\nData: ", entry.data)
 
-
-
 def shutdown_switches():
     ShutdownAllSwitchConnections()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='P4Runtime Controller')

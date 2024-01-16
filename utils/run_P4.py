@@ -365,7 +365,7 @@ class ExerciseRunner:
             print('')
 
 
-        install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries"], self.test["rule_distribution_scheme"])
+        install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries_file"], self.test["table_entries_distribution_scheme"])
         print()
 
         # CLI(self.net)

@@ -2,9 +2,9 @@
 scriptdir="$(dirname "$0")"
 cd "$scriptdir"
 
-if [ $# -lt 2 ]
+if [ $# -lt 6 ]
 then
-	echo "No arguments provided"
+	echo "Missing arguments"
 	exit 1
 fi
 
@@ -12,14 +12,13 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 snort_folder=../../snort/
 src_folder=../../src/
 
-topology=$1
-output_folder=$2
+output_folder=$1
+ruleset_folder=$2
+table_entries_file=$3
 
-rule_distribution_scheme=$3
-ruleset_folder=$4
-
-table_entries="../src/p4_table_entries.config"
-
+topology=$4
+table_entries_distribution_scheme=$5
+amount_of_space_per_sw=$6
 
 
 if [ ! -d $output_folder ]
@@ -28,49 +27,36 @@ then
 	exit 1
 fi
 
-if [ -z $rule_distribution_scheme ]
-then
-	rule_distribution_scheme="firstfit"
-fi
-
-if [ -z $ruleset_folder ]
-then
-	ruleset_folder="../snort/rules/snort3-registered"
-fi
-
-
-
-# Update topology in Makefile
-sed -i -e 's|TOPO = topologies/[^/"]*|TOPO = topologies/'$topology'|' ../src/Makefile
-
-
 config_file="$parent_path""/experiment_configuration/""$topology"".json"
-
-# Update rule distribution scheme in the configuration file
-if [ $rule_distribution_scheme == "simple" ]; then
-	table_entries="../src/p4onids_compiled_rules.config"
-fi
-sed -i -e 's|\"rule_distribution_scheme\": [^,]*|\"rule_distribution_scheme\": \"'$rule_distribution_scheme'\"|' $config_file
-sed -i -e 's|\"table_entries\": [^,]*|\"table_entries\": \"'$table_entries'\"|' $config_file
 
 # Update the rule path in the configuration file
 sed -i -e 's|--rule-path [^ "]*|--rule-path '$ruleset_folder'|' $config_file
 
+sed -i -e 's|\"table_entries_file\": [^,]*|\"table_entries_file\": \"'$table_entries_file'\"|' $config_file
+sed -i -e 's|\"table_entries_distribution_scheme\": [^,]*|\"table_entries_distribution_scheme\": \"'$table_entries_distribution_scheme'\"|' $config_file
+
+# Update topology in Makefile
+sed -i -e 's|TOPO = topologies/[^/"]*|TOPO = topologies/'$topology'|' ../src/Makefile
+
+# Update available memory space in sswitches in the "network_info" file
+# sed -i -e 's|TOPO = topologies/[^/"]*|TOPO = topologies/'$topology'|' 
+
+
 # Create the snort log folders
 mkdir ../snort/logs
 
-echo $topology
-echo $rule_distribution_scheme
 echo $ruleset_folder
-echo $table_entries
+echo $table_entries_file
+echo $topology
+echo $table_entries_distribution_scheme
 
-# Update the data plane time_threshold parameter
+# Specify the data plane parameter
 n_redirected_packets=200
-count_min_size=16384
 time_threshold=10
+count_min_size=16384
 echo $n_redirected_packets
-echo $count_min_size
 echo $time_threshold
+echo $count_min_size
 
 # Update data plane parameters
 sed -i -e 's|MAX_PACKETS=[^;"]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4

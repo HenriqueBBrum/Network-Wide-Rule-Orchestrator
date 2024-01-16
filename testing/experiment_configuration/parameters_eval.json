@@ -3,8 +3,8 @@
 	"bmv2_json": "../src/build/main.json",
 
 	"network_info": "../src/topologies/parameters_eval/network_info.json",
-	"table_entries": "../src/p4_table_entries.config",
-	"rule_distribution_scheme": "simple",
+	"table_entries_file": "../src/p4_table_entries.config",
+	"table_entries_distribution_scheme": "simple",
 
 	"devices":[
 		{

@@ -6,7 +6,7 @@ cd "$scriptdir"
 
 if [ $# -lt 1 ]
 then
-	echo "No arguments provided"
+	echo "Missing arguments"
 	exit 1
 fi
 
@@ -28,11 +28,11 @@ fi
 
 
 for time_threshold in {10,25,50}; do
-	for size in {256,512,1024,4096,16834}; do
-		for packets_redirected in {10,25,50,100,200,400,800}; do
-			results_folder=${output_folder}${packets_redirected}_${time_threshold}_${size}_registered/
+	for count_min_size in {256,512,1024,4096,16834}; do
+		for n_packets_redirected in {10,25,50,100,200,400,800}; do
+			results_folder=${output_folder}/${n_packets_redirected}_${time_threshold}_${count_min_size}_registered/
 			mkdir $results_folder
-			./run_parameter_experiment.sh $results_folder $packets_redirected $time_threshold $size $ruleset_folder
+			./run_parameter_experiment.sh $results_folder $ruleset_folder $n_packets_redirected $time_threshold $count_min_size
 		done;
 	done;
 done;

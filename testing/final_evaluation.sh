@@ -10,10 +10,8 @@ then
 	exit 1
 fi
 
-
 output_folder=$1
 ruleset_folder=$2
-
 
 if [ ! -d $output_folder ]
 then
@@ -28,14 +26,20 @@ fi
 
 
 for topology in {"linear","tree","ring"}; do
-	for rule_distribution_scheme in {"simple","firstfit","bestfit"}; do
+	for table_entries_distribution_scheme in {"simple","firstfit","bestfit"}; do
+		table_entries_file="../src/p4_table_entries.config"
+		if [ $table_entries_distribution_scheme == "simple" ]; then
+			table_entries_file="../src/p4onids_compiled_rules.config"
+		fi
 		for available_space in {100,66,33}; do
 			amt_of_table_entries=$(wc -l < $table_entries_file)
-			amount_of_space_per_sw=$((amt_of_table_entries*(100/available_space)))
-			echo $amount_of_space_per_sw
-			results_folder=${output_folder}${topology}_${rule_distribution_scheme}_${available_space}_registered/
+			div=$(bc <<< "scale=2; $available_space/100")
+			amount_of_space_per_sw=$(bc <<< "scale=2; $amt_of_table_entries*$div")
+			amount_of_space_per_sw=$(printf "%.0f" $amount_of_space_per_sw)
+			results_folder=${output_folder}/${topology}_${table_entries_distribution_scheme}_${available_space}_registered/
 			mkdir $results_folder
-			# ./run_final_eval_experiment.sh $topology $results_folder $rule_distribution_scheme $amount_of_space_per_sw $table_entries_file $ruleset_folder
+
+			./run_final_eval_experiment.sh $results_folder $ruleset_folder $table_entries_file $topology $table_entries_distribution_scheme $amount_of_space_per_sw 
 		done;
 	done;
 done;
