@@ -171,6 +171,7 @@ class ExerciseRunner:
         """
 
         self.quiet = quiet
+        print(args)
         self.logger('Reading topology file.')
         with open(topo_file, 'r') as f:
             topo = json.load(f)
@@ -365,7 +366,7 @@ class ExerciseRunner:
             print('')
 
 
-        install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries_file"], self.test["table_entries_distribution_scheme"])
+        install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries_file"], self.test["table_entries_distribution_algorithm"])
         print()
 
         # CLI(self.net)

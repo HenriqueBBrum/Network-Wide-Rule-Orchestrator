@@ -3,8 +3,8 @@
 	"bmv2_json": "../src/build/main.json",
 
 	"network_info": "../src/topologies/linear/network_info.json",
-	"table_entries_file": "../src/p4onids_compiled_rules.config",
-	"table_entries_distribution_scheme": "simple",
+	"table_entries_file": "../src/p4_table_entries.config",
+	"table_entries_distribution_algorithm": "simple",
 
 	"devices":[
 		{
@@ -17,6 +17,6 @@
 		},
 		{
 			"name":"hsource",
-			"cmds":["tcpreplay-edit --duration=60 --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/Tuesday-WorkingHours.pcap"]
+			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/Friday-WorkingHours.pcap"]
 		}]
 }

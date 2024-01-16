@@ -24,22 +24,20 @@ then
 	ruleset_folder="../snort/rules/snort3-registered"
 fi
 
+table_entries_file="../src/p4_table_entries.config"
 
 for topology in {"linear","tree","ring"}; do
-	for table_entries_distribution_scheme in {"simple","firstfit","bestfit"}; do
-		table_entries_file="../src/p4_table_entries.config"
-		if [ $table_entries_distribution_scheme == "simple" ]; then
-			table_entries_file="../src/p4onids_compiled_rules.config"
-		fi
-		for available_space in {100,66,33}; do
+	for table_entries_distribution_algorithm in {"simple","firstfit","bestfit"}; do
+		
+		for available_space in {100,75,50,25}; do
 			amt_of_table_entries=$(wc -l < $table_entries_file)
 			div=$(bc <<< "scale=2; $available_space/100")
 			amount_of_space_per_sw=$(bc <<< "scale=2; $amt_of_table_entries*$div")
 			amount_of_space_per_sw=$(printf "%.0f" $amount_of_space_per_sw)
-			results_folder=${output_folder}/${topology}_${table_entries_distribution_scheme}_${available_space}_registered/
+			results_folder=${output_folder}/${topology}_${table_entries_distribution_algorithm}_${available_space}_registered/
 			mkdir $results_folder
 
-			./run_final_eval_experiment.sh $results_folder $ruleset_folder $table_entries_file $topology $table_entries_distribution_scheme $amount_of_space_per_sw 
+			./run_final_eval_experiment.sh $results_folder $ruleset_folder $table_entries_file $topology $table_entries_distribution_algorithm $amount_of_space_per_sw 
 		done;
 	done;
 done;

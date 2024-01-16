@@ -17,7 +17,7 @@ ruleset_folder=$2
 table_entries_file=$3
 
 topology=$4
-table_entries_distribution_scheme=$5
+table_entries_distribution_algorithm=$5
 amount_of_space_per_sw=$6
 
 
@@ -35,8 +35,8 @@ sed -i -e 's|--rule-path [^ ]*|--rule-path '$ruleset_folder'|' $config_file
 # Update the table entries file in the configuration file
 sed -i -e 's|"table_entries_file": [^,]*|"table_entries_file": "'$table_entries_file'"|' $config_file
 
-# Update the table entries distribution scheme in the configuration file
-sed -i -e 's|"table_entries_distribution_scheme": [^,]*|"table_entries_distribution_scheme": "'$table_entries_distribution_scheme'"|' $config_file
+# Update the table entries distribution algorithm in the configuration file
+sed -i -e 's|"table_entries_distribution_algorithm": [^,]*|"table_entries_distribution_algorithm": "'$table_entries_distribution_algorithm'"|' $config_file
 
 # Update topology in Makefile
 sed -i -e 's|TOPO = topologies/[^/]*|TOPO = topologies/'$topology'|' ../src/Makefile
@@ -47,7 +47,7 @@ sed -i -e 's|"free_table_entries" : [^,]*|"free_table_entries" : '$amount_of_spa
 echo $ruleset_folder
 echo $table_entries_file
 echo $topology
-echo $table_entries_distribution_scheme
+echo $table_entries_distribution_algorithm
 
 # Specify the data plane parameter
 n_redirected_packets=200

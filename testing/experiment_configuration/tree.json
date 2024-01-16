@@ -4,7 +4,7 @@
 
 	"network_info": "../src/topologies/tree/network_info.json",
 	"table_entries_file": "../src/p4_table_entries.config",
-	"table_entries_distribution_scheme": "firstfit",
+	"table_entries_distribution_algorithm": "firstfit",
 
 	"devices":[
 		{

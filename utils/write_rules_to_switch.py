@@ -25,7 +25,7 @@ from p4runtime_lib.switch import ShutdownAllSwitchConnections
 switches = {}
 
 
-def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, table_entries_distribution_scheme):
+def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, table_entries_distribution_algorithm):
     # Instantiate a P4Runtime helper from the p4info file
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
 
@@ -240,7 +240,7 @@ def get_rule_fields(rule):
 #         else:
 #             not_initial_nodes.append(node)
 
-#     if rule_distribution_scheme == "simple":
+#     if rule_distribution_algorithm == "simple":
 #         for node in not_initial_nodes:
 #             device_table_entries_map[node] = []
 #         return device_table_entries_map
@@ -364,7 +364,7 @@ if __name__ == '__main__':
     parser.add_argument('--bmv2_json', help='BMv2 JSON file from p4c', type=str, required=False, default='../src/build/main.json')
     parser.add_argument('--network_info', help='Network information', type=str, required=True)
     parser.add_argument('--table_entries', help='Table entries file', type=str, required=True)
-    parser.add_argument('--rule_distribution_scheme', help='Distribution of rules scheme', type=str, required=True)
+    parser.add_argument('--rule_distribution_algorithm', help='Distribution of rules algorithm', type=str, required=True)
 
     args = parser.parse_args()
 
@@ -377,4 +377,4 @@ if __name__ == '__main__':
         print("\nBMv2 JSON file not found: %s\nHave you run 'make'?" % args.bmv2_json)
         parser.exit(1)
 
-    install_rules(args.p4info, args.bmv2_json, args.network_info, args.table_entries, args.rule_distribution_scheme)
+    install_rules(args.p4info, args.bmv2_json, args.network_info, args.table_entries, args.rule_distribution_algorithm)
