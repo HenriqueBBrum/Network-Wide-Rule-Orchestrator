@@ -3,8 +3,8 @@
 	"bmv2_json": "../src/build/main.json",
 
 	"network_info": "../src/topologies/linear/network_info.json",
-	"table_entries_file": "/home/p4/Documents/Network-Wide-Rule-Orchestrator/src/p4_table_entries.config",
-	"table_entries_distribution_scheme": "firstfit",
+	"table_entries_file": "/home/p4/Documents/Network-Wide-Rule-Orchestrator/src/p4onids_compiled_rules.config",
+	"table_entries_distribution_scheme": "simple",
 
 	"devices":[
 		{

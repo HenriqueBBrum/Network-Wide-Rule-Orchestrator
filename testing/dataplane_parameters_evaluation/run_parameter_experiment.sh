@@ -29,7 +29,7 @@ fi
 
 if [ -z $ruleset_folder ]
 then
-	ruleset_folder=../snort/rules/snort3-registered # Only ../snort since this is used in the src folder
+	ruleset_folder=../snort/rules/snort3-registered/ # Only ../snort since this is used in the src folder
 fi
 
 # Check if variables were set up; otherwise use default value
@@ -60,7 +60,7 @@ sed -i -e 's|COUNT_MIN_SIZE=[^;"]*|COUNT_MIN_SIZE='$count_min_size'|' "$src_fold
 config_file="$parent_path"/../experiment_configuration/"$topology".json
 
 # Update rule path in configuration file
-sed -i -e 's|--rule-path [^ "]*|--rule-path '$ruleset_folder'|' $config_file
+sed -i -e 's|--rule-path [^ ]*|--rule-path '$ruleset_folder'|' $config_file
 
 # Create snort log folders
 mkdir "$snort_folder"logs

@@ -10,7 +10,7 @@
       },
       "action_name": "MyIngress.ipv4_forward",
       "action_params": {
-        "port": 3
+        "port": 4
       }
     },
     {

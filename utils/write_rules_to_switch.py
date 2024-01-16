@@ -21,6 +21,10 @@ import p4runtime_lib.helper
 from p4runtime_lib.error_utils import printGrpcError
 from p4runtime_lib.switch import ShutdownAllSwitchConnections
 
+
+switches = {}
+
+
 def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, table_entries_distribution_scheme):
     # Instantiate a P4Runtime helper from the p4info file
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
@@ -59,31 +63,31 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, tabl
     for key, subset in table_entries_subsets.items():
         if key == "networks":
             for k, sub in subset.items():
-                print("Network table entries subset. Switch: ", k, "Table entries length: ", len(sub))
+                print("Network table entries subset. Table entries key: ", k, "| Table entries length: ", len(sub))
                 print(sub[0:5])
         else:
-            print("Switch: ", key, "Table entries length: ", len(subset))
+            print("Table entries key: ", key, "| Table entries length: ", len(subset))
             print(subset[0:5])
     device_table_entries_map = {}
     ## Distributions calculated manualy
     ## LINEAR P4ONIDS
-    # device_table_entries_map["s1"] = ordered_rules[0:network_info["switches"]["s1"]["free_table_entries"]]
-    # device_table_entries_map["s2"] = []
-    # device_table_entries_map["s3"] = []
-    # device_table_entries_map["s4"] = []
-    # device_table_entries_map["s5"] = []
-    ## LINEAR P4ONIDS
-    ## LINEAR FIRSTFIT
-    device_table_entries_map["s1"] = table_entries_subsets["generic"]
-    device_table_entries_map["s1"].extend(table_entries_subsets["s1"])
-    for subset in table_entries_subsets["networks"].values():
-        device_table_entries_map["s1"].extend(subset)
-    device_table_entries_map["s1"].extend(table_entries_subsets["s2"])
-    device_table_entries_map["s2"] = device_table_entries_map["s1"][network_info["switches"]["s1"]["free_table_entries"]:len(device_table_entries_map["s1"])]
-    device_table_entries_map["s1"] = device_table_entries_map["s1"][0:network_info["switches"]["s1"]["free_table_entries"]]
+    device_table_entries_map["s1"] = ordered_rules[0:network_info["switches"]["s1"]["free_table_entries"]]
+    device_table_entries_map["s2"] = []
     device_table_entries_map["s3"] = []
     device_table_entries_map["s4"] = []
     device_table_entries_map["s5"] = []
+    ## LINEAR P4ONIDS
+    ## LINEAR FIRSTFIT
+    # device_table_entries_map["s1"] = table_entries_subsets["generic"]
+    # device_table_entries_map["s1"].extend(table_entries_subsets["s1"])
+    # for subset in table_entries_subsets["networks"].values():
+    #     device_table_entries_map["s1"].extend(subset)
+    # device_table_entries_map["s1"].extend(table_entries_subsets["s2"])
+    # device_table_entries_map["s2"] = device_table_entries_map["s1"][network_info["switches"]["s1"]["free_table_entries"]:len(device_table_entries_map["s1"])]
+    # device_table_entries_map["s1"] = device_table_entries_map["s1"][0:network_info["switches"]["s1"]["free_table_entries"]]
+    # device_table_entries_map["s3"] = []
+    # device_table_entries_map["s4"] = []
+    # device_table_entries_map["s5"] = []
     ## LINEAR FIRSTFIT
     ## LINEAR BESTFIT 100%
     # device_table_entries_map["s1"] = table_entries_subsets["generic"]
@@ -115,6 +119,7 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, tabl
             # print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
             # switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
             # Writes for each switch its rules
+            switches[switch_id] = switch
             write_rules(p4info_helper, switch, rules)
             read_table_rules(p4info_helper, switch)
             print()
