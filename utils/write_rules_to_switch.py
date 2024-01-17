@@ -59,14 +59,14 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, tabl
             dag_topology.add_edge(link[0], link[1])
 
     table_entries_subsets = create_table_entries_subsets(dag_topology, switches_info, hosts_info, ordered_rules)
-    print("\n------------------ Table entries per switch -----------------------")
+    print("\n------------------ Table entries per switch or type -----------------------")
     for key, subset in table_entries_subsets.items():
         if key == "networks":
             for k, sub in subset.items():
-                print("Network table entries subset. Table entries key: ", k, "| Table entries length: ", len(sub))
+                print("------------------ Network table entries subset. Table entries key: ", k, "| Table entries length: ", len(sub), "------------------\n")
                 print(sub[0:5])
         else:
-            print("Table entries key: ", key, "| Table entries length: ", len(subset))
+            print("------------------ Table entries key: ", key, "| Table entries length: ", len(subset), "------------------\n")
             print(subset[0:5])
     device_table_entries_map = {}
     ## Distributions calculated manualy
