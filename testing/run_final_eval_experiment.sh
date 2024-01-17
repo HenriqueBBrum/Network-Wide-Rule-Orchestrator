@@ -48,6 +48,7 @@ echo $ruleset_folder
 echo $table_entries_file
 echo $topology
 echo $table_entries_distribution_algorithm
+echo $amount_of_space_per_sw
 
 # Specify the data plane parameter
 n_redirected_packets=200

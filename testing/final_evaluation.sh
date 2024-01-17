@@ -31,9 +31,9 @@ for topology in {"linear","tree","ring"}; do
 		
 		for available_space in {100,75,50,25}; do
 			amt_of_table_entries=$(wc -l < $table_entries_file)
-			div=$(bc <<< "scale=2; $available_space/100")
-			amount_of_space_per_sw=$(bc <<< "scale=2; $amt_of_table_entries*$div")
-			amount_of_space_per_sw=$(printf "%.0f" $amount_of_space_per_sw)
+			a=$((available_space*amt_of_table_entries))
+			amount_of_space_per_sw=$(echo $(( a%100? a/100+1:a/100 )))
+			
 			results_folder=${output_folder}/${topology}_${table_entries_distribution_algorithm}_${available_space}_registered/
 			mkdir $results_folder
 

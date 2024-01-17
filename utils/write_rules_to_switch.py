@@ -63,10 +63,10 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, tabl
     for key, subset in table_entries_subsets.items():
         if key == "networks":
             for k, sub in subset.items():
-                print("------------------ Network table entries subset. Table entries key: ", k, "| Table entries length: ", len(sub), "------------------\n")
+                print("\n------------------ Network table entries subset. Table entries key: ", k, "| Table entries length: ", len(sub), "------------------\n")
                 print(sub[0:5])
         else:
-            print("------------------ Table entries key: ", key, "| Table entries length: ", len(subset), "------------------\n")
+            print("\n--------------- Table entries key: ", key, "| Table entries length: ", len(subset), "------------------\n")
             print(subset[0:5])
     device_table_entries_map = {}
     ## Distributions calculated manualy
