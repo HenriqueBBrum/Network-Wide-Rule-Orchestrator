@@ -15,9 +15,10 @@ src_folder=../../src/
 output_folder=$1
 ruleset_folder=$2
 topology="parameters_eval"
-n_redirected_packets=$3
-time_threshold=$4
-count_min_size=$5
+
+n_cloned_packets=$3
+t_count_min_ageing_time_threshold=$4
+w_count_min_size=$5
 
 if [ ! -d $output_folder ]
 then
@@ -31,19 +32,19 @@ then
 fi
 
 # Check if variables were set up; otherwise use default value
-if [ -z $n_redirected_packets ]
+if [ -z $n_cloned_packets ]
 then
-	n_redirected_packets=10
+	n_cloned_packets=10
 fi
 
-if [ -z $time_threshold ]
+if [ -z $t_count_min_ageing_time_threshold ]
 then
-	time_threshold=10
+	t_count_min_ageing_time_threshold=10
 fi
 
-if [ -z $count_min_size ]
+if [ -z $w_count_min_size ]
 then
-	count_min_size=1024
+	w_count_min_size=1024
 fi
 
 config_file=$parent_path"/../experiment_configuration/"$topology".json"
@@ -55,9 +56,9 @@ sed -i -e 's|--rule-path [^ ]*|--rule-path '$ruleset_folder'|' $config_file
 sed -i -e 's|TOPO = topologies/[^/]*|TOPO = topologies/'$topology'|' $src_folder"/Makefile"
 
 # Update data plane parameters
-sed -i -e 's|MAX_PACKETS=[^;]*|MAX_PACKETS='$n_redirected_packets'|' $src_folder"/include/header.p4"
-sed -i -e 's|TIME_THRESHOLD=[^;]*|TIME_THRESHOLD='$time_threshold'|' $src_folder"/include/header.p4"
-sed -i -e 's|COUNT_MIN_SIZE=[^;]*|COUNT_MIN_SIZE='$count_min_size'|' $src_folder"/include/header.p4"
+sed -i -e 's|MAX_PACKETS=[^;]*|MAX_PACKETS='$n_cloned_packets'|' $src_folder"/include/header.p4"
+sed -i -e 's|TIME_THRESHOLD=[^;]*|TIME_THRESHOLD='$t_count_min_ageing_time_threshold'|' $src_folder"/include/header.p4"
+sed -i -e 's|COUNT_MIN_SIZE=[^;]*|COUNT_MIN_SIZE='$COUNT_MIN_SIZE'|' $src_folder"/include/header.p4"
 
 # Create snort log folders
 mkdir $snort_folder"/logs"

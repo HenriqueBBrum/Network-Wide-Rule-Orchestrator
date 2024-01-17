@@ -1,4 +1,4 @@
-PCAP,Packets to redirect (N),Time threshold (T),Count-min width (W),Alerts,Percent of alerts from baseline,Packets redirected,Percent of packets redirected from baseline
+PCAP,Packets to clone (N),Count-min aging time threshold (T),Count-min width (W),Alerts,% of alerts relative to the baseline,Packets cloned to NIDS,% of packets cloned to NIDS relative to the baseline
 Tuesday,10,10,4096,52165,0.6214558017631642,1533750,0.1327697461399171
 Thursday,10,10,4096,54638,0.7356176371592057,1472501,0.15795934896119673
 Wednesday,10,10,4096,57368,0.13820517329851384,3143596,0.22798055070180476

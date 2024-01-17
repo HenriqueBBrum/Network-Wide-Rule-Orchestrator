@@ -27,12 +27,12 @@ then
 fi
 
 
-for time_threshold in {10,25,50}; do
-	for n_packets_redirected in {10,25,50,100,200,400,800}; do
-		for count_min_size in {256,512,1024,4096,16834}; do
-			results_folder=${output_folder}/${n_packets_redirected}_${time_threshold}_${count_min_size}_registered/
+for n_cloned_packets in {10,25,50,100,200,400,800}; do
+	for t_count_min_ageing_time_threshold in {10,25,50}; do
+		for w_count_min_size in {256,512,1024,4096,16834}; do
+			results_folder=${output_folder}/${n_cloned_packets}_${t_count_min_ageing_time_threshold}_${w_count_min_size}_registered/
 			mkdir $results_folder
-			./run_parameter_experiment.sh $results_folder $ruleset_folder $n_packets_redirected $time_threshold $count_min_size
+			./run_parameter_experiment.sh $results_folder $ruleset_folder $n_cloned_packets $t_count_min_ageing_time_threshold $w_count_min_size
 		done;
 	done;
 done;
