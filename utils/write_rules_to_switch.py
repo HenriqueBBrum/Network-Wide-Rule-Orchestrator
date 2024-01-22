@@ -71,7 +71,7 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, tabl
     device_table_entries_map = {}
     ## Distributions calculated manualy
     ## LINEAR P4ONIDS
-    device_table_entries_map["s1"] = ordered_rules[0:network_info["switches"]["s1"]["free_table_entries"]]
+    device_table_entries_map["s1"] = parsed_rules[0:network_info["switches"]["s1"]["free_table_entries"]]
     device_table_entries_map["s2"] = []
     device_table_entries_map["s3"] = []
     device_table_entries_map["s4"] = []

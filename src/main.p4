@@ -13,17 +13,17 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     direct_counter(CounterType.packets_and_bytes) ipv4_ids_table_hit_counter;
     direct_counter(CounterType.packets_and_bytes) ipv6_ids_table_hit_counter;
 
-    // Registers for the count-min sketch
-    register<bit<10>>(COUNT_MIN_SIZE) cm_limiter1;
-    register<bit<10>>(COUNT_MIN_SIZE) cm_limiter2;
-    register<bit<10>>(COUNT_MIN_SIZE) cm_limiter3;
-    register<bit<10>>(COUNT_MIN_SIZE) cm_limiter4;
+    // Registers for the countmin sketch
+    register<bit<10>>(COUNTMIN_WIDTH) cm_limiter1;
+    register<bit<10>>(COUNTMIN_WIDTH) cm_limiter2;
+    register<bit<10>>(COUNTMIN_WIDTH) cm_limiter3;
+    register<bit<10>>(COUNTMIN_WIDTH) cm_limiter4;
 
 
-    register<bit<16>>(COUNT_MIN_SIZE) window_id_tracker1;
-    register<bit<16>>(COUNT_MIN_SIZE) window_id_tracker2;
-    register<bit<16>>(COUNT_MIN_SIZE) window_id_tracker3;
-    register<bit<16>>(COUNT_MIN_SIZE) window_id_tracker4;
+    register<bit<16>>(COUNTMIN_WIDTH) window_id_tracker1;
+    register<bit<16>>(COUNTMIN_WIDTH) window_id_tracker2;
+    register<bit<16>>(COUNTMIN_WIDTH) window_id_tracker3;
+    register<bit<16>>(COUNTMIN_WIDTH) window_id_tracker4;
 
     register<bit<16>>(1) global_window_tracker;
 
@@ -122,17 +122,17 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     }
 
 
-     // Reads the count-min sketch and returns the min count found in all four rows
+     // Reads the countmin sketch and returns the min count found in all four rows
     action read_cm_limiter(bit<16> protocol, bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port) {
         bit<32> flow_hash1;
         bit<32> flow_hash2;
         bit<32> flow_hash3;
         bit<32> flow_hash4;
 
-        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
-        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
-        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
-        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
+        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
+        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
+        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
+        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
 
         current_min = 1023;
         bit<10> aux;
@@ -150,17 +150,17 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     }
 
 
-    // Updates the entries for a flow in the count-min sketch if a new packet from the flow has arrived
+    // Updates the entries for a flow in the countmin sketch if a new packet from the flow has arrived
     action increment_cm_limiter(bit<16> protocol, bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port) {
         bit<32> flow_hash1;
         bit<32> flow_hash2;
         bit<32> flow_hash3;
         bit<32> flow_hash4;
 
-        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
-        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
-        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
-        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNT_MIN_SIZE);
+        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
+        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
+        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
+        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
 
         bit<16> global_window_id = 0;
         global_window_tracker.read(global_window_id, 0);
@@ -237,7 +237,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
             last_packet_timestamp.read(last_timestamp, 0);
             bit<48> time_diff = standard_metadata.ingress_global_timestamp - last_timestamp;
-            if (time_diff > ONE_SECOND * TIME_THRESHOLD) {
+            if (time_diff > ONE_SECOND * COUNTMIN_TIME_THRESHOLD) {
                 bit<16> global_window_id = 0;
                 global_window_tracker.read(global_window_id, 0);
                 global_window_id = global_window_id + 1;

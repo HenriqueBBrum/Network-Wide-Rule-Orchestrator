@@ -24,17 +24,16 @@ then
 	ruleset_folder="../snort/rules/snort3-registered"
 fi
 
-table_entries_file="../src/p4_table_entries.config"
+table_entries_file="../src/p4_table_entries_random.config"
 
-for topology in {"linear","tree","ring"}; do
-	for table_entries_distribution_algorithm in {"simple","firstfit","bestfit"}; do
-		
-		for available_space in {100,75,50,25}; do
+for topology in "linear"; do
+	for table_entries_distribution_algorithm in "simple"; do
+		for available_space in 25; do
 			amt_of_table_entries=$(wc -l < $table_entries_file)
 			a=$((available_space*amt_of_table_entries))
 			amount_of_space_per_sw=$(echo $(( a%100? a/100+1:a/100 )))
 			
-			results_folder=${output_folder}/${topology}_${table_entries_distribution_algorithm}_${available_space}_registered/
+			results_folder=${output_folder}/${topology}_${table_entries_distribution_algorithm}_${available_space}_registered_random/
 			mkdir $results_folder
 
 			./run_final_eval_experiment.sh $results_folder $ruleset_folder $table_entries_file $topology $table_entries_distribution_algorithm $amount_of_space_per_sw 

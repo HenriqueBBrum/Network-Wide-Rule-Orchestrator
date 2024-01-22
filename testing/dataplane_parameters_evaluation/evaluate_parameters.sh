@@ -27,12 +27,12 @@ then
 fi
 
 
-for n_cloned_packets in {10,25,50,100,200,400,800}; do
-	for t_count_min_ageing_time_threshold in {10,25,50}; do
-		for w_count_min_size in {256,512,1024,4096,16834}; do
-			results_folder=${output_folder}/${n_cloned_packets}_${t_count_min_ageing_time_threshold}_${w_count_min_size}_registered/
+for packets_to_clone in {10,25,50,100,200,400,800}; do
+	for countmin_time_threshold in {10,25,50}; do
+		for countmin_width in {256,512,1024,4096,16834}; do
+			results_folder=${output_folder}/${packets_to_clone}_${countmin_time_threshold}_${countmin_width}_registered/
 			mkdir $results_folder
-			./run_parameter_experiment.sh $results_folder $ruleset_folder $n_cloned_packets $t_count_min_ageing_time_threshold $w_count_min_size
+			./run_parameter_experiment.sh $results_folder $ruleset_folder $packets_to_clone $countmin_time_threshold $countmin_width
 		done;
 	done;
 done;

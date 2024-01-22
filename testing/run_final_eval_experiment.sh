@@ -51,17 +51,17 @@ echo $table_entries_distribution_algorithm
 echo $amount_of_space_per_sw
 
 # Specify the data plane parameter
-n_redirected_packets=200
-time_threshold=10
-count_min_size=16384
-echo $n_redirected_packets
-echo $time_threshold
-echo $count_min_size
+packets_to_clone=200
+countmin_time_threshold=10
+countmin_width=16384
+echo $packets_to_clone
+echo $countmin_time_threshold
+echo $countmin_width
 
 # Update data plane parameters
-sed -i -e 's|MAX_PACKETS=[^;]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
-sed -i -e 's|COUNT_MIN_SIZE=[^;]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
-sed -i -e 's|TIME_THRESHOLD=[^;]*|TIME_THRESHOLD='$time_threshold'|' ../src/include/header.p4
+sed -i -e 's|MAX_PACKETS=[^;]*|MAX_PACKETS='$packets_to_clone'|' ../src/include/header.p4
+sed -i -e 's|COUNTMIN_TIME_THRESHOLD=[^;]*|COUNTMIN_TIME_THRESHOLD='$countmin_time_threshold'|' ../src/include/header.p4
+sed -i -e 's|COUNTMIN_WIDTH=[^;]*|COUNTMIN_WIDTH='$countmin_width'|' ../src/include/header.p4
 
 # Create the snort log folders
 mkdir ../snort/logs
