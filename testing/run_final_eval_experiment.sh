@@ -17,8 +17,8 @@ ruleset_folder=$2
 table_entries_file=$3
 
 topology=$4
-table_entries_distribution_algorithm=$5
-amount_of_space_per_sw=$6
+offloading_algorithm=$5
+space_per_sw=$6
 
 
 if [ ! -d $output_folder ]
@@ -36,19 +36,19 @@ sed -i -e 's|--rule-path [^ ]*|--rule-path '$ruleset_folder'|' $config_file
 sed -i -e 's|"table_entries_file": [^,]*|"table_entries_file": "'$table_entries_file'"|' $config_file
 
 # Update the table entries distribution algorithm in the configuration file
-sed -i -e 's|"table_entries_distribution_algorithm": [^,]*|"table_entries_distribution_algorithm": "'$table_entries_distribution_algorithm'"|' $config_file
+sed -i -e 's|"offloading_algorithm": [^,]*|"offloading_algorithm": "'$offloading_algorithm'"|' $config_file
 
 # Update topology in Makefile
 sed -i -e 's|TOPO = topologies/[^/]*|TOPO = topologies/'$topology'|' ../src/Makefile
 
 # Update available memory space in sswitches in the "network_info" file
-sed -i -e 's|"free_table_entries" : [^,]*|"free_table_entries" : '$amount_of_space_per_sw'|' "../src/topologies/"$topology"/network_info.json"
+sed -i -e 's|"free_table_entries" : [^,]*|"free_table_entries" : '$space_per_sw'|' "../src/topologies/"$topology"/network_info.json"
 
 echo $ruleset_folder
 echo $table_entries_file
 echo $topology
-echo $table_entries_distribution_algorithm
-echo $amount_of_space_per_sw
+echo $offloading_algorithm
+echo $space_per_sw
 
 # Specify the data plane parameter
 n_redirected_packets=200

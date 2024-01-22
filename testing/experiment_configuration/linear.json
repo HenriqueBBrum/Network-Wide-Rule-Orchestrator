@@ -4,7 +4,7 @@
 
 	"network_info": "../src/topologies/linear/network_info.json",
 	"table_entries_file": "../src/p4_table_entries.config",
-	"table_entries_distribution_algorithm": "simple",
+	"offloading_algorithm": "simple",
 
 	"devices":[
 		{
