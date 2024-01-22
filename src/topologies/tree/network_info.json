@@ -17,33 +17,33 @@
         "hwi1064b": {"ip": "192.168.10.15/24"},
         "hub1632b": {"ip": "192.168.10.16/24"},
 
-        "hub1432b": {"ip": "192.168.10.19/24"},
         "hub1464b": {"ip": "192.168.10.17/24"},
+        "hub1432b": {"ip": "192.168.10.19/24"},
         "hmac": {"ip": "192.168.10.25/24"}
     },
     "switches": {
         "s1": {
-            "free_table_entries" : 123,
+            "free_table_entries" : 367,
             "hops_from_source" : 0,
-            "hops_from_endhost" : 1
+            "hops_from_endhost" : 0
         },
         "s2": {
-            "free_table_entries" : 123,
+            "free_table_entries" : 367,
             "hops_from_source" : 1,
             "hops_from_endhost" : 0
         },
         "s3": {
-            "free_table_entries" : 123,
+            "free_table_entries" : 367,
             "hops_from_source" : 1,
             "hops_from_endhost" : 0
         },
         "s4": {
-            "free_table_entries" : 123,
+            "free_table_entries" : 367,
             "hops_from_source" : 2,
             "hops_from_endhost" : 0
         },
         "s5": {
-            "free_table_entries" : 123,
+            "free_table_entries" : 367,
             "hops_from_source" : 2,
             "hops_from_endhost" : 0
         }
