@@ -15,15 +15,12 @@ from ipaddress import ip_address, ip_network, IPv4Network
 import grpc
 
 # Import P4Runtime lib from parent utils dir
-# Probably there's a better way of doing this.
 import p4runtime_lib.bmv2
 import p4runtime_lib.helper
 from p4runtime_lib.error_utils import printGrpcError
 from p4runtime_lib.switch import ShutdownAllSwitchConnections
 
-
 switches = {}
-
 
 def offload(p4info, bmv2_json, network_info_file, table_entries_file, offloading_algorithm):
     # Instantiate a P4Runtime helper from the p4info file
@@ -36,41 +33,32 @@ def offload(p4info, bmv2_json, network_info_file, table_entries_file, offloading
 
     switches_info, hosts_info = get_network_info(network_info)
     parsed_table_entries = [get_table_entry_fields(table_entry) for table_entry in table_entries]
-    ordered_table_entries = sorted(parsed_table_entries, key=lambda table_entry: table_entry['priority'], reverse=True)
-
-    device_table_entries_map =  {switch: [] for switch in switches_info.keys()}
-    if (offloading_algorithm!="firstfit" or offloading_algorithm!="bestfit"):
-        device_table_entries_map["s1"] = parsed_table_entries[0:network_info["switches"]["s1"]["free_table_entries"]]
-    else:
-        table_entries_subsets = create_table_entries_subsets(network_info, switches_info, hosts_info, ordered_table_entries)
-        device_table_entries_map = distribute_table_entries(network_info, switches_info, hosts_info, table_entries_subsets)
-   
+    print(offloading_algorithm)
+    switches_table_entries =  get_switches_table_entries(network_info, switches_info, hosts_info, parsed_table_entries, offloading_algorithm)
+    for switch_id, table_entries in switches_table_entries.items():
+        print(switch_id, len(table_entries))
     print("\n------------------ Begin offloading -----------------------")
-    try:
-        # Create a switch connection object for s1 and s2; this is backed by a P4Runtime gRPC connection.
-        for switch_id, table_entries in device_table_entries_map.items():
-            print(switch_id, " Space: ", network_info["switches"][switch_id]["free_table_entries"], " Usage for NIDS table entries: ", len(table_entries))
-            num_id = int(switch_id.split('s')[1])
-            switch = p4runtime_lib.bmv2.Bmv2SwitchConnection(
-                name=switch_id,
-                address='127.0.0.1:5005'+str(num_id),
-                device_id=num_id-1,
-                proto_dump_file='logs/'+switch_id+'-p4runtime-requests_ids.txt')
-
-            # Send master arbitration update message to establish this controller as master
-            switch.MasterArbitrationUpdate()
-            # print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
-            # switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
-            # Writes for each switch its table_entries
-            switches[switch_id] = switch
-            write_table_entries(p4info_helper, switch, table_entries)
-            read_table_table_entries(p4info_helper, switch)
-            print()
-
-    except KeyboardInterrupt:
-        print("Shutting down.")
-    except grpc.RpcError as e:
-        printGrpcError(e)
+    # try:
+    #     for switch_id, table_entries in switches_table_entries.items():
+    #         print(switch_id, " Space: ", network_info["switches"][switch_id]["free_table_entries"], " Usage for NIDS table entries: ", len(table_entries))
+    #         num_id = int(switch_id.split('s')[1])
+    #         switch = p4runtime_lib.bmv2.Bmv2SwitchConnection(
+    #             name=switch_id, address='127.0.0.1:5005'+str(num_id),
+    #             device_id=num_id-1, proto_dump_file='logs/'+switch_id+'-p4runtime-requests_ids.txt')
+    #
+    #         # Send master arbitration update message to establish this controller as master
+    #         switch.MasterArbitrationUpdate()
+    #         # print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
+    #         # switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
+    #         # Writes for each switch its table_entries
+    #         switches[switch_id] = switch
+    #         write_table_entries(p4info_helper, switch, table_entries)
+    #         read_table_table_entries(p4info_helper, switch)
+    #         print()
+    # except KeyboardInterrupt:
+    #     print("Shutting down.")
+    # except grpc.RpcError as e:
+    #     printGrpcError(e)
 
 # Returns the information regarding what hosts are connected to what switches
 def get_network_info(network_info):
@@ -99,80 +87,6 @@ def get_network_info(network_info):
 
     return switches_info, hosts_info
 
-# Creates a graph and the subsets
-def create_table_entries_subsets(network_info, switches_info, hosts_info, ordered_table_entries):
-    dag_topology = nx.DiGraph()
-    dag_topology.add_node("start")
-
-    for node, data in network_info["switches"].items():
-        dag_topology.add_node(node, **data)
-        if data["hops_from_source"] == 0:
-            dag_topology.add_edge("start", node, weight=0)
-
-    for link in network_info["links"]:
-        if("h" in link[0]):
-            dag_topology.add_edge(link[1], link[0])
-        else:
-            dag_topology.add_edge(link[0], link[1])
-
-    subsets = table_entries_subsets(dag_topology, switches_info, hosts_info, ordered_table_entries)
-
-    print("\n------------------ Table entries per switch or type -----------------------")
-    for key, subset in subsets.items():
-        if key == "networks":
-            for k, sub in subset.items():
-                print("\n------------------ Network table entries subset. Table entries key: ", k, "| Table entries length: ", len(sub), "------------------\n")
-                print(sub[0:5])
-        else:
-            print("\n--------------- Table entries key: ", key, "| Table entries length: ", len(subset), "------------------\n")
-            print(subset[0:5])
-
-    return subsets
-
-# Delegates the table entries to the switches according to the destination IP and the location of the hosts in the network
-def table_entries_subsets(network_topology, switches_info, hosts_info, table_entries):
-    table_entries_subsets = {key: [] for key in switches_info}
-    table_entries_subsets["generic"] = []
-    table_entries_subsets["networks"] = {}
-    for table_entry in table_entries:
-        try:
-            if (table_entry["dstMask"]=="0.0.0.0"):
-                table_entries_subsets["generic"].append(table_entry)
-            elif(table_entry["dstMask"]=="255.255.255.255"):
-                if (table_entry["dstAddr"]=="255.255.255.255"):
-                    table_entries_subsets["generic"].append(table_entry)
-                else:
-                    table_entries_subsets[hosts_info[table_entry["dstAddr"]+"/24"]].append(table_entry)
-            elif(table_entry["dstMask"]!="0.0.0.0" and table_entry["dstMask"]!="255.255.255.255"):
-                dependent_switches = set()
-                for host, switch in hosts_info.items():
-                    if (ip_address(host.split("/")[0]) in ip_network(IPv4Network(table_entry["dstAddr"]+"/"+table_entry["dstMask"]))):
-                        dependent_switches.add(switch)
-
-                dependent_switches = list(dependent_switches)
-                dependent_switches.sort()
-                if (len(dependent_switches)>1):
-                    lca_switch = dependent_switches[0]
-                    i=0
-                    while i<len(dependent_switches):
-                        lca_switch = nx.lowest_common_ancestor(network_topology, lca_switch, dependent_switches[i])
-                        i+=1
-                    network_subset_id = lca_switch+"+"+"-".join(dependent_switches)
-                    if (network_subset_id not in table_entries_subsets["networks"]):
-                        table_entries_subsets["networks"][network_subset_id] = [table_entry]
-                    else:
-                        table_entries_subsets["networks"][network_subset_id].append(table_entry)
-                else:
-                    table_entries_subsets[dependent_switches[0]].append(table_entry)
-        except Exception as e:
-            print("Error in subset: ", e.args)
-    return table_entries_subsets
-
-def distribute_table_entries(network_info, switches_info, hosts_info, table_entries_subsets):
-    return {}
-
-
-
 # Parses a table entry from the table_entry compiler list and saves the meaningful fields to a dict
 def get_table_entry_fields(table_entry):
     table_entry_fields = {}
@@ -200,7 +114,174 @@ def get_table_entry_fields(table_entry):
 
     return table_entry_fields
 
-# Parses table entires file and writes them to the corresponding switch
+# Distributes the table entries (rules) to the switches in the network according to the chosen offloading algorihtm
+# Only one source switch and it must be named "s1"
+def get_switches_table_entries(network_info, switches_info, hosts_info, parsed_table_entries, offloading_algorithm):
+    switches_table_entries = {switch: [] for switch in switches_info.keys()}
+    if (offloading_algorithm=="simple" or offloading_algorithm=="parameters_eval"):
+        switches_table_entries["s1"] = parsed_table_entries[0:network_info["switches"]["s1"]["free_table_entries"]]
+        return switches_table_entries
+
+    ordered_table_entries = sorted(parsed_table_entries, key=lambda table_entry: table_entry['priority'], reverse=True)
+
+    dag_topology = create_dag_topology(network_info)
+    table_entries_subsets = get_table_entries_subsets(dag_topology, switches_info, hosts_info, ordered_table_entries)
+    print("\n------------------ Table entries per switch or type -----------------------")
+    for key, subset in table_entries_subsets.items():
+            print("\n--------------- Table entries key: ", key, "| Table entries length: ", len(subset), "------------------\n")
+            print(subset[0:3])
+    print()
+    if (offloading_algorithm == "firstfit"):
+        switches_table_entries = firstfit(network_info, dag_topology, switches_info, hosts_info, table_entries_subsets)
+    elif (offloading_algorithm == "bestfit"):
+        switches_table_entries = bestfit(network_info, dag_topology, switches_info, hosts_info, table_entries_subsets)
+
+    return switches_table_entries
+
+# create a DAG from the input topology
+def create_dag_topology(network_info):
+    dag_topology = nx.DiGraph()
+    dag_topology.add_node("start")
+
+    for node, data in network_info["switches"].items():
+        dag_topology.add_node(node, **data)
+        if data["hops_from_source"] == 0:
+            dag_topology.add_edge("start", node, weight=0)
+
+    for link in network_info["links"]:
+        if("h" in link[0]):
+            dag_topology.add_edge(link[1], link[0])
+        else:
+            dag_topology.add_edge(link[0], link[1])
+
+    return dag_topology
+
+
+# Delegates the table entries to the switches according to the destination IP and the location of the hosts in the network
+# Switches are have ordered names: s1 is the source, s2 is the second, and so. There can be more than one swtich at any depth. but they are still alphabetically ordered
+def get_table_entries_subsets(network_topology, switches_info, hosts_info, table_entries):
+    table_entries_subsets = {key: [] for key in switches_info}
+    table_entries_subsets["generic"] = []
+    for table_entry in table_entries:
+        try:
+            if (table_entry["dstMask"]=="0.0.0.0"):
+                table_entries_subsets["generic"].append(table_entry)
+            elif(table_entry["dstMask"]=="255.255.255.255"):
+                if (table_entry["dstAddr"]=="255.255.255.255"):
+                    table_entries_subsets["generic"].append(table_entry)
+                else:
+                    table_entries_subsets[hosts_info[table_entry["dstAddr"]+"/24"]].append(table_entry)
+            elif(table_entry["dstMask"]!="0.0.0.0" and table_entry["dstMask"]!="255.255.255.255"):
+                dependent_switches = set()
+                for host, switch in hosts_info.items():
+                    if (ip_address(host.split("/")[0]) in ip_network(IPv4Network(table_entry["dstAddr"]+"/"+table_entry["dstMask"]))):
+                        dependent_switches.add(switch)
+
+                dependent_switches = list(dependent_switches)
+                dependent_switches.sort() # Only works if they are alphabetically sorted
+                if (len(dependent_switches)>1):
+                    lca_switch = dependent_switches[0]
+                    i=0
+                    while i<len(dependent_switches):
+                        lca_switch = nx.lowest_common_ancestor(network_topology, lca_switch, dependent_switches[i])
+                        i+=1
+                    network_subset_id = lca_switch+"+"+"-".join(dependent_switches)
+                    if (network_subset_id not in table_entries_subsets):
+                        table_entries_subsets[network_subset_id] = [table_entry]
+                    else:
+                        table_entries_subsets[network_subset_id].append(table_entry)
+                else:
+                    table_entries_subsets[dependent_switches[0]].append(table_entry)
+        except Exception as e:
+            print("Error in subset: ", e.args)
+    return table_entries_subsets
+
+# Switches have the same space
+def firstfit(network_info, dag_topology, switches_info, hosts_info, table_entries_subsets):
+    switches_table_entries = {switch: [] for switch in switches_info.keys()}
+    sorted_switches = sorted(network_info["switches"].items(), key=lambda sw: sw[1]["hops_from_source"])
+    ordered_subsets = ["generic"]
+    for sw, info in sorted_switches:
+        ordered_subsets_to_sw, aux_list = [], []
+        for subset_key in table_entries_subsets.keys():
+            if subset_key == sw:
+                ordered_subsets_to_sw.append(subset_key)
+                continue
+
+            if subset_key.startswith(sw):
+                if subset_key.count(sw) == 1:
+                    aux_list.append(subset_key)
+                else:
+                    ordered_subsets_to_sw.insert(0,subset_key)
+
+        ordered_subsets.extend(ordered_subsets_to_sw)
+        ordered_subsets.extend(aux_list)
+
+    space_per_switch = {switch: info["free_table_entries"] for switch, info in network_info["switches"].items()}
+    missing_entries_per_subsets = {key: len(table_entries_subsets[key]) for key in ordered_subsets}
+
+    return switches_table_entries
+
+def offload_generic():
+    global_offloaded_rules = {}
+    for switch in switches_with_end_hosts():
+        paths_to_"switch"_from_source = get_all_paths_to_endhost_swtich
+        for path in paths_to_"switch"_from_source():
+            rules_offloaded_in_path = get_len_offloade_rules_path()
+            if (rules_offloaded_in_path == len(rules)):
+                continue
+
+            for nodes in nx.path(source, switch):
+                if (space_per_switch[sw]>0):
+                    size_before = len(switches_table_entries[sw])
+                    switches_table_entries[sw].append(table_entries_subsets[subset_key][rules_offloaded_in_path:(rules_offloaded_in_path+space_per_switch[sw])])
+                    space_per_switch[sw]+=(len(switches_table_entries[sw]) - size_before)
+                    rules_offloaded_in_path[sw]+=(len(switches_table_entries[sw]) - size_before)
+
+                if rules_offloaded_in_path == len(rules)
+                    break
+
+def offload_networks():
+    global_offloaded_rules = {}
+    for switch in switches_related_to_network():
+        for path in paths_to_"switch"_from_source():
+            rules_offloaded_in_path = get_len_offloade_rules_path()
+            if (rules_offloaded_in_path == len(rules)):
+                continue
+
+            pahts_to_end_host_s1 = get_all_paths_to_endhost_swtich
+            for nodes in nx.shortest_path(source, switch):
+                if (space_per_switch[sw]>0):
+                    size_before = len(switches_table_entries[sw])
+                    switches_table_entries[sw].append(table_entries_subsets[subset_key][rules_offloaded_in_path:(rules_offloaded_in_path+space_per_switch[sw])])
+                    space_per_switch[sw]+=(len(switches_table_entries[sw]) - size_before)
+                    rules_offloaded_in_path[sw]+=(len(switches_table_entries[sw]) - size_before)
+
+                if rules_offloaded_in_path == len(rules)
+                    break
+
+def offload_to_address():
+    global_offloaded_rules = {}
+    paths_to_end_host_from_s1 = get_all_paths_to_endhost_swtich
+    for path in paths_to_end_host_from_s1():
+        rules_offloaded_in_path = get_len_offloade_rules_path()
+        if (rules_offloaded_in_path == len(rules)):
+            continue
+        for nodes in nx.path(source, switch):
+            if (space_per_switch[sw]>0):
+                size_before = len(switches_table_entries[sw])
+                switches_table_entries[sw].append(table_entries_subsets[subset_key][rules_offloaded_in_path:(rules_offloaded_in_path+space_per_switch[sw])])
+                space_per_switch[sw]+=(len(switches_table_entries[sw]) - size_before)
+                rules_offloaded_in_path[sw]+=(len(switches_table_entries[sw]) - size_before)
+
+            if rules_offloaded_in_path == len(rules)
+                break
+
+
+def bestfit(network_info, switches_info, hosts_info, table_entries_subsets):
+    return {}
+
+# Iterates over the table entries and writes them to the corresponding switch
 def write_table_entries(p4info_helper, switch, table_entries):
     for table_entry in table_entries:
         if table_entry["table_name"] == "ipv4_ids":
@@ -220,7 +301,7 @@ def write_table_entries(p4info_helper, switch, table_entries):
                 action_name="MyIngress."+table_entry["action"])
         switch.WriteTableEntry(table_entry)
 
-# Don't add table matches with "don't care values", including 0.0.0.0 IPs and 0->65535 port ranges
+# Don't add to the match fields "don't care values", including 0.0.0.0 IPs and 0->65535 port ranges, because P4 does not support them. Instead, leave it blank
 def build_match_fields(table_entry_fields, ip_version=4):
     match_fields = {}
     match_fields["meta.protocol"] = int(table_entry_fields["protocol"], base=16)
@@ -240,6 +321,7 @@ def build_match_fields(table_entry_fields, ip_version=4):
 
     return match_fields
 
+# Reads the table entries of a switch
 def read_table_entries(p4info_helper, switch):
     print('\n----- Reading tables entries for %s -----' % switch.name)
     count = 0
@@ -263,6 +345,7 @@ def read_table_entries(p4info_helper, switch):
             print()
             count+=1
 
+# Reads the counters of a P4 program
 def read_counters(p4info):
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
     for switch_id, switch in switches.items():
@@ -276,6 +359,7 @@ def read_counters(p4info):
                     print('\nIndex (port): ', entry.index, end=' ')
                     print("Data: ", entry.data)
 
+# Reads the direct counters of a table in a P4 program
 def read_direct_counters(p4info, table_name):
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
     for switch_id, switch in switches.items():

@@ -27,7 +27,7 @@ from time import sleep
 
 import p4runtime_lib.simple_controller
 
-from write_rules_to_switch import install_rules, shutdown_switches, read_counters, read_direct_counters
+from offload_table_entries import offload, shutdown_switches, read_counters, read_direct_counters
 
 from mininet.cli import CLI
 from mininet.link import TCLink
@@ -179,9 +179,9 @@ class ExerciseRunner:
         self.switches = topo['switches']
         self.links = self.parse_links(topo['links'])
 
-        self.logger('Reading test file.')
-        with open(test_file, 'r') as f:
-            self.test = json.load(f)
+        # self.logger('Reading test file.')
+        # with open(test_file, 'r') as f:
+        #     self.test = json.load(f)
 
         # Ensure all the needed directories exist and are directories
         for dir_name in [log_dir, pcap_dir]:
@@ -366,25 +366,25 @@ class ExerciseRunner:
             print('')
 
 
-        install_rules(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries_file"], self.test["table_entries_distribution_algorithm"])
-        print()
+        # offload(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries_file"], self.test["table_entries_distribution_alg"])
+        # print()
 
-        # CLI(self.net)
+        CLI(self.net)
 
-        print('Starting test')
-        for device in self.test['devices']:
-            dev_instance = self.net.get(device.get('name'))
-            print(device.get('name'))
-            for cmd in device['cmds']:
-                print(cmd)
-                dev_instance.cmd(cmd)
+        # print('Starting test')
+        # for device in self.test['devices']:
+        #     dev_instance = self.net.get(device.get('name'))
+        #     print(device.get('name'))
+        #     for cmd in device['cmds']:
+        #         print(cmd)
+        #         dev_instance.cmd(cmd)
 
-            sleep(1)
+        #     sleep(1)
 
-        print('Ending test')
-        read_counters(self.test["p4info"])
-        read_direct_counters(self.test["p4info"], "ipv4_ids")
-        shutdown_switches()
+        # print('Ending test')
+        # read_counters(self.test["p4info"])
+        # read_direct_counters(self.test["p4info"], "ipv4_ids")
+        # shutdown_switches()
 
 
 
@@ -398,7 +398,7 @@ def get_args():
     parser.add_argument('-t', '--topo', help='Path to topology json',
                         type=str, required=False, default='./topology.json')
     parser.add_argument('-e', '--test', help='Path to a json test',
-                        type=str, required=False, default='./test.json')
+                        type=str, required=False)
     parser.add_argument('-l', '--log-dir', type=str, required=False, default=default_logs)
     parser.add_argument('-p', '--pcap-dir', type=str, required=False, default=default_pcaps)
     parser.add_argument('-j', '--switch_json', type=str, required=False)
