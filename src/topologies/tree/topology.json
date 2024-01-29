@@ -30,7 +30,7 @@
                 "cli_input": "topologies/mirror_cmds.txt"},
         "s4": {"runtime_json" : "topologies/tree/s4-runtime.json",
                 "cli_input": "topologies/mirror_cmds.txt"},
-        "s5": {"runtime_json" : "topologies/tree/s4-runtime.json",
+        "s5": {"runtime_json" : "topologies/tree/s5-runtime.json",
                 "cli_input": "topologies/mirror_cmds.txt"}
     },
     "links": [
