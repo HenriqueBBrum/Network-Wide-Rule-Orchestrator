@@ -1,4 +1,4 @@
-PCAP,Topology,Offloading algorithm,Available space (%),Alerts,% of alerts relative to the baseline,Packets cloned to NIDS,% of packets cloned to NIDS relative to the baseline,Total table entries used
+PCAP,Topology,Offloading algorithm,Available space (%),Alerts,% of alerts relative to the baseline,Packets cloned to NIDS,% of packets cloned to NIDS relative to the baseline,Table entries used
 Wednesday,linear,firstfit,25,57722,0.13905799423261775,4297278,0.3116481268454185,734
 Monday,linear,firstfit,25,59899,0.9088964083577379,2892314,0.24699582945166987,734
 Thursday,linear,firstfit,25,55058,0.7412722988892628,2562757,0.2749141951453681,734
