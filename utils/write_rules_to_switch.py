@@ -58,7 +58,7 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, tabl
         else:
             dag_topology.add_edge(link[0], link[1])
 
-    table_entries_subsets = create_table_entries_subsets(dag_topology, switches_info, hosts_info, ordered_rules)
+    table_entries_subsets = create_table_entries_subsets(dag_topology, switches_info, hosts_info, parsed_rules)
     print("\n------------------ Table entries per switch or type -----------------------")
     for key, subset in table_entries_subsets.items():
         if key == "networks":
@@ -68,40 +68,19 @@ def install_rules(p4info, bmv2_json, network_info_file, table_entries_file, tabl
         else:
             print("\n--------------- Table entries key: ", key, "| Table entries length: ", len(subset), "------------------\n")
             print(subset[0:5])
-    device_table_entries_map = {}
     ## Distributions calculated manualy
-    ## LINEAR P4ONIDS
-    device_table_entries_map["s1"] = parsed_rules[0:network_info["switches"]["s1"]["free_table_entries"]]
-    device_table_entries_map["s2"] = []
-    device_table_entries_map["s3"] = []
-    device_table_entries_map["s4"] = []
-    device_table_entries_map["s5"] = []
-    ## LINEAR P4ONIDS
-    ## LINEAR FIRSTFIT
-    # device_table_entries_map["s1"] = table_entries_subsets["generic"]
-    # device_table_entries_map["s1"].extend(table_entries_subsets["s1"])
-    # for subset in table_entries_subsets["networks"].values():
-    #     device_table_entries_map["s1"].extend(subset)
-    # device_table_entries_map["s1"].extend(table_entries_subsets["s2"])
-    # device_table_entries_map["s2"] = device_table_entries_map["s1"][network_info["switches"]["s1"]["free_table_entries"]:len(device_table_entries_map["s1"])]
-    # device_table_entries_map["s1"] = device_table_entries_map["s1"][0:network_info["switches"]["s1"]["free_table_entries"]]
-    # device_table_entries_map["s3"] = []
-    # device_table_entries_map["s4"] = []
-    # device_table_entries_map["s5"] = []
-    ## LINEAR FIRSTFIT
-    ## LINEAR BESTFIT 100%
-    # device_table_entries_map["s1"] = table_entries_subsets["generic"]
-    # device_table_entries_map["s1"].extend(table_entries_subsets["s1"])
+    ## TREE FIRSTFIT
+    device_table_entries_map = {key: [] for key in switches_info}
+   
+    device_table_entries_map["s1"] = table_entries_subsets["generic"]
+    device_table_entries_map["s1"].extend(table_entries_subsets["s1"])
+    for subset in table_entries_subsets["networks"].values():
+        device_table_entries_map["s1"].extend(subset)
 
-    # device_table_entries_map["s2"] = []
-    # for subset in table_entries_subsets["networks"].values():
-    #     device_table_entries_map["s2"].extend(subset)
-    # device_table_entries_map["s2"].extend(table_entries_subsets["s2"])
+    device_table_entries_map["s1"] = device_table_entries_map["s1"][0:network_info["switches"]["s1"]["free_table_entries"]]
 
-    # device_table_entries_map["s3"] = []
-    # device_table_entries_map["s4"] = []
-    # device_table_entries_map["s5"] = []
-    ## LINEAR BESTFIT 100%
+
+
     print("\n------------------ Begin offloading -----------------------")
     try:
         # Create a switch connection object for s1 and s2; this is backed by a P4Runtime gRPC connection.
@@ -263,22 +242,25 @@ def get_rule_fields(rule):
 # Parses table entires file and writes them to the corresponding switch
 def write_rules(p4info_helper, switch, rules):
     for rule in rules:
-        if rule["table_name"] == "ipv4_ids":
-            # Remove "don't care entries" (e.g. 0.0.0.0 IP or 0-65535 port range) because P4Runtime does not accept them
-            match_fields = build_match_fields(rule)
-            table_entry = p4info_helper.buildTableEntry(
-                table_name="MyIngress.ipv4_ids",
-                priority=int(rule["priority"]),
-                match_fields=match_fields,
-                action_name="MyIngress."+rule["action"])
-        else:
-            match_fields = build_match_fields(rule, 6)
-            table_entry = p4info_helper.buildTableEntry(
-                table_name="MyIngress.ipv6_ids",
-                priority=int(rule["priority"]),
-                match_fields=match_fields,
-                action_name="MyIngress."+rule["action"])
-        switch.WriteTableEntry(table_entry)
+        try:
+            if rule["table_name"] == "ipv4_ids":
+                # Remove "don't care entries" (e.g. 0.0.0.0 IP or 0-65535 port range) because P4Runtime does not accept them
+                match_fields = build_match_fields(rule)
+                table_entry = p4info_helper.buildTableEntry(
+                    table_name="MyIngress.ipv4_ids",
+                    priority=int(rule["priority"]),
+                    match_fields=match_fields,
+                    action_name="MyIngress."+rule["action"])
+            else:
+                match_fields = build_match_fields(rule, 6)
+                table_entry = p4info_helper.buildTableEntry(
+                    table_name="MyIngress.ipv6_ids",
+                    priority=int(rule["priority"]),
+                    match_fields=match_fields,
+                    action_name="MyIngress."+rule["action"])
+            switch.WriteTableEntry(table_entry)
+        except Exception as e:
+            print("Error in writing rule: ", rule, e.args)
 
 # Don't add table matches with "don't care values", including 0.0.0.0 IPs and 0->65535 port ranges
 def build_match_fields(rule_fields, ip_version=4):

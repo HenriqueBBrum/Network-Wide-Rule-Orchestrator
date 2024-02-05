@@ -6,7 +6,7 @@ cd "$scriptdir"
 
 if [ $# -lt 1 ]
 then
-	echo "No arguments provided"
+	echo "Missing arguments"
 	exit 1
 fi
 
@@ -24,12 +24,15 @@ then
 	ruleset_folder="../snort/rules/snort3-registered"
 fi
 
+table_entries_file="../../src/p4_table_entries_random.config"
+amt_of_table_entries=$(wc -l < $table_entries_file)
+
 table_entries_file="../src/p4_table_entries_random.config"
 
-for topology in "linear"; do
-	for table_entries_distribution_algorithm in "simple"; do
-		for available_space in 25; do
-			amt_of_table_entries=$(wc -l < $table_entries_file)
+# Run an experiment in each one of the following scenarios:
+for topology in {"linear","tree"}; do
+	for table_entries_distribution_algorithm in {"simple","firstfit","bestfit"}; do
+		for available_space in {100,75,50,25}; do
 			a=$((available_space*amt_of_table_entries))
 			amount_of_space_per_sw=$(echo $(( a%100? a/100+1:a/100 )))
 			

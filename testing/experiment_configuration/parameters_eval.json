@@ -3,7 +3,7 @@
 	"bmv2_json": "../src/build/main.json",
 
 	"network_info": "../src/topologies/parameters_eval/network_info.json",
-	"table_entries_file": "../src/p4_table_entries.config",
+	"table_entries_file": "../src/p4_table_entries_random.config",
 	"table_entries_distribution_algorithm": "simple",
 
 	"devices":[
@@ -13,6 +13,6 @@
 		},
 		{
 			"name":"hsource",
-			"cmds":["tcpreplay-edit --duration=15 --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/Thursday-WorkingHours.pcap"]
+			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/Monday-WorkingHours.pcap"]
 		}]
 }

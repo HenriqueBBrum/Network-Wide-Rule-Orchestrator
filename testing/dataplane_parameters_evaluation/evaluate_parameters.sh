@@ -10,10 +10,8 @@ then
 	exit 1
 fi
 
-
 output_folder=$1
 ruleset_folder=$2
-
 
 if [ ! -d $output_folder ]
 then
@@ -26,7 +24,7 @@ then
 	ruleset_folder="../snort/rules/snort3-registered"
 fi
 
-
+# Run an experiment with each one of the following parameters:
 for packets_to_clone in {10,25,50,100,200,400,800}; do
 	for countmin_time_threshold in {10,25,50}; do
 		for countmin_width in {256,512,1024,4096,16834}; do

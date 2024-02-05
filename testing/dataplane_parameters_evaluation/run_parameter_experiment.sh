@@ -1,3 +1,5 @@
+# Evaluate one dataplane parameter configuration
+
 #!/bin/bash
 scriptdir="$(dirname "$0")"
 cd $scriptdir
@@ -49,13 +51,13 @@ fi
 
 config_file=$parent_path"/../experiment_configuration/"$topology".json"
 
-# Update rule path in configuration file
+# Update rule path in THE configuration file
 sed -i -e 's|--rule-path [^ ]*|--rule-path '$ruleset_folder'|' $config_file
 
-# Update topology in Makefile
+# Update the topology in Makefile
 sed -i -e 's|TOPO = topologies/[^/]*|TOPO = topologies/'$topology'|' $src_folder"/Makefile"
 
-# Update data plane parameters
+# Update the data plane parameters
 sed -i -e 's|MAX_PACKETS=[^;]*|MAX_PACKETS='$packets_to_clone'|' $src_folder"/include/header.p4"
 sed -i -e 's|COUNTMIN_TIME_THRESHOLD^;]*|COUNTMIN_TIME_THRESHOLD='$countmin_time_threshold'|' $src_folder"/include/header.p4"
 sed -i -e 's|COUNTMIN_WIDTH=[^;]*|COUNTMIN_WIDTH='$countmin_width'|' $src_folder"/include/header.p4"
@@ -75,11 +77,13 @@ for pcap in ../../../CICIDS2017-PCAPS/*; do
 	make clean
 	make TEST_JSON=$config_file > $output_folder"/output.txt"
 
+	# Save the results of the experiment
 	cd $parent_path
 	weekday=$(echo $pcap_name | sed "s|-.*||")
 	mkdir $output_folder/$weekday
 	mv $output_folder"/output.txt" $output_folder/$weekday
 
+	# Clean snort outputs
 	sudo chmod -R a+rwx "$snort_folder"/logs/*
 	cp -r "$snort_folder"/logs/* $output_folder/$weekday
 	rm -r "$snort_folder"/logs/*
