@@ -59,8 +59,10 @@ git clone  https://github.com/HenriqueBBrum/Network-Wide-Rule-Orchestrator.git &
 To dowload them, go to [this link](https://www.unb.ca/cic/datasets/ids-2017.html), and scroll down to the end of the page. Click the `Download this dataset` and fill in the required information. Finally, enter the `CIC-IDS-2017` directory, then the `PCAPs` directory, and download the PCAP for each day of the week. They are big PCAPs, with over 8GB of data, so they take a while to download.
 
 Save them into your host machine in one folder. For the guest folder, it must be named `CICIDS2017-PCAPS` and placed at the same level as this repo's folder. The image below illustrates this:
+<p align="center">
+	<img src="./assets/guest_folder_placement.png" alt="drawing" width="800"/>
+</p>
 
-![Guest CIC-IDS-2017 folder placement](./assets/guest_folder_placement.png)
 
 For more information on how to create shared folders with VirtualBox, follow these links:
 - [How to Create and Access a Shared Folder in VirtualBox](https://www.makeuseof.com/how-to-create-virtualbox-shared-folder-access/)
