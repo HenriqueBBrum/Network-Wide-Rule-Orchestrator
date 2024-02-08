@@ -20,12 +20,12 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     register<bit<10>>(COUNTMIN_WIDTH) cm_limiter4;
 
 
-    register<bit<16>>(COUNTMIN_WIDTH) window_id_tracker1;
-    register<bit<16>>(COUNTMIN_WIDTH) window_id_tracker2;
-    register<bit<16>>(COUNTMIN_WIDTH) window_id_tracker3;
-    register<bit<16>>(COUNTMIN_WIDTH) window_id_tracker4;
+    register<bit<16>>(COUNTMIN_WIDTH) phase_id_tracker1;
+    register<bit<16>>(COUNTMIN_WIDTH) phase_id_tracker2;
+    register<bit<16>>(COUNTMIN_WIDTH) phase_id_tracker3;
+    register<bit<16>>(COUNTMIN_WIDTH) phase_id_tracker4;
 
-    register<bit<16>>(1) global_window_tracker;
+    register<bit<16>>(1) global_phase_tracker;
 
     // Variables used in IDS forwarding logic
     bit<10> current_min = 0;
@@ -162,38 +162,38 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
         hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
 
-        bit<16> global_window_id = 0;
-        global_window_tracker.read(global_window_id, 0);
+        bit<16> global_phase_id = 0;
+        global_phase_tracker.read(global_phase_id, 0);
 
         bit<10> aux_counter;
-        bit<16> aux_window_id_tracker;
+        bit<16> aux_phase_id_tracker;
 
         // Update count min row 1
         cm_limiter1.read(aux_counter, flow_hash1);
         log_msg("cm_limiter1 value {}", {aux_counter});
         log_msg("hash {}", {flow_hash1});
-        window_id_tracker1.read(aux_window_id_tracker, flow_hash1);
-        cm_limiter1.write(flow_hash1,  (global_window_id - aux_window_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
+        phase_id_tracker1.read(aux_phase_id_tracker, flow_hash1);
+        cm_limiter1.write(flow_hash1,  (global_phase_id - aux_phase_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
 
         // Update count min row 2
         cm_limiter2.read(aux_counter, flow_hash2);
-        window_id_tracker2.read(aux_window_id_tracker, flow_hash2);
-        cm_limiter2.write(flow_hash2,  (global_window_id - aux_window_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
+        phase_id_tracker2.read(aux_phase_id_tracker, flow_hash2);
+        cm_limiter2.write(flow_hash2,  (global_phase_id - aux_phase_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
 
         // Update count min row 3
         cm_limiter3.read(aux_counter, flow_hash3);
-        window_id_tracker3.read(aux_window_id_tracker, flow_hash3);
-        cm_limiter3.write(flow_hash3,  (global_window_id - aux_window_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
+        phase_id_tracker3.read(aux_phase_id_tracker, flow_hash3);
+        cm_limiter3.write(flow_hash3,  (global_phase_id - aux_phase_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
 
         // Update count min row 4
         cm_limiter4.read(aux_counter, flow_hash4);
-        window_id_tracker4.read(aux_window_id_tracker, flow_hash4);
-        cm_limiter4.write(flow_hash4,  (global_window_id - aux_window_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
+        phase_id_tracker4.read(aux_phase_id_tracker, flow_hash4);
+        cm_limiter4.write(flow_hash4,  (global_phase_id - aux_phase_id_tracker) >= 2? 1 :(aux_counter < MAX_PACKETS ? aux_counter + 1 : MAX_PACKETS+1));
 
-        window_id_tracker1.write(flow_hash1, global_window_id);
-        window_id_tracker2.write(flow_hash2, global_window_id);
-        window_id_tracker3.write(flow_hash3, global_window_id);
-        window_id_tracker4.write(flow_hash4, global_window_id);
+        phase_id_tracker1.write(flow_hash1, global_phase_id);
+        phase_id_tracker2.write(flow_hash2, global_phase_id);
+        phase_id_tracker3.write(flow_hash3, global_phase_id);
+        phase_id_tracker4.write(flow_hash4, global_phase_id);
     }
 
 
@@ -221,6 +221,19 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
                ipv6_ids.apply();
             }
 
+            // Updates the global phase tracker if the aging threshold has elapsed
+            last_packet_timestamp.read(last_timestamp, 0);
+            bit<48> time_diff = standard_metadata.ingress_global_timestamp - last_timestamp;
+            if (time_diff > ONE_SECOND * COUNTMIN_TIME_THRESHOLD) {
+                bit<16> global_phase_id = 0;
+                global_phase_tracker.read(global_phase_id, 0);
+                global_phase_id = global_phase_id + 1;
+                global_phase_tracker.write(0, global_phase_id);
+
+                log_msg("New timeout");
+                last_packet_timestamp.write(0, standard_metadata.ingress_global_timestamp); // update
+            }
+
             if(meta.ids_table_match){
                 increment_cm_limiter(meta.protocol, src_IP, dst_IP, meta.srcPort, meta.dstPort);
                 read_cm_limiter(meta.protocol, src_IP, dst_IP, meta.srcPort, meta.dstPort);
@@ -233,18 +246,6 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
                     clone(CloneType.I2E, REPORT_MIRROR_SESSION_ID);
                 }
                 // This flow is already present at the Count-min Sketch and it's not needed to foward packets from this flow to the IDS
-            }
-
-            last_packet_timestamp.read(last_timestamp, 0);
-            bit<48> time_diff = standard_metadata.ingress_global_timestamp - last_timestamp;
-            if (time_diff > ONE_SECOND * COUNTMIN_TIME_THRESHOLD) {
-                bit<16> global_window_id = 0;
-                global_window_tracker.read(global_window_id, 0);
-                global_window_id = global_window_id + 1;
-                global_window_tracker.write(0, global_window_id);
-
-                log_msg("New timeout");
-                last_packet_timestamp.write(0, standard_metadata.ingress_global_timestamp); // update
             }
         }
     }
