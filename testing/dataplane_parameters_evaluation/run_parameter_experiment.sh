@@ -19,7 +19,7 @@ ruleset_folder=$2
 topology="parameters_eval"
 
 packets_to_clone=$3
-countmin_time_threshold=$4
+countmin_aging_threshold=$4
 countmin_width=$5
 
 if [ ! -d $output_folder ]
@@ -39,9 +39,9 @@ then
 	packets_to_clone=10
 fi
 
-if [ -z $countmin_time_threshold ]
+if [ -z $countmin_aging_threshold ]
 then
-	countmin_time_threshold=10
+	countmin_aging_threshold=10
 fi
 
 if [ -z $countmin_width ]
@@ -59,7 +59,7 @@ sed -i -e 's|TOPO = topologies/[^/]*|TOPO = topologies/'$topology'|' $src_folder
 
 # Update the data plane parameters
 sed -i -e 's|MAX_PACKETS=[^;]*|MAX_PACKETS='$packets_to_clone'|' $src_folder"/include/header.p4"
-sed -i -e 's|COUNTMIN_TIME_THRESHOLD^;]*|COUNTMIN_TIME_THRESHOLD='$countmin_time_threshold'|' $src_folder"/include/header.p4"
+sed -i -e 's|COUNTMIN_AGING_THRESHOLD^;]*|COUNTMIN_AGING_THRESHOLD='$countmin_aging_threshold'|' $src_folder"/include/header.p4"
 sed -i -e 's|COUNTMIN_WIDTH=[^;]*|COUNTMIN_WIDTH='$countmin_width'|' $src_folder"/include/header.p4"
 
 # Create snort log folders

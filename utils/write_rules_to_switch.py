@@ -243,18 +243,18 @@ def get_rule_fields(rule):
 def write_rules(p4info_helper, switch, rules):
     for rule in rules:
         try:
-            if rule["table_name"] == "ipv4_ids":
+            if rule["table_name"] == "ipv4_nids":
                 # Remove "don't care entries" (e.g. 0.0.0.0 IP or 0-65535 port range) because P4Runtime does not accept them
                 match_fields = build_match_fields(rule)
                 table_entry = p4info_helper.buildTableEntry(
-                    table_name="MyIngress.ipv4_ids",
+                    table_name="MyIngress.ipv4_nids",
                     priority=int(rule["priority"]),
                     match_fields=match_fields,
                     action_name="MyIngress."+rule["action"])
             else:
                 match_fields = build_match_fields(rule, 6)
                 table_entry = p4info_helper.buildTableEntry(
-                    table_name="MyIngress.ipv6_ids",
+                    table_name="MyIngress.ipv6_nids",
                     priority=int(rule["priority"]),
                     match_fields=match_fields,
                     action_name="MyIngress."+rule["action"])
@@ -321,7 +321,7 @@ def read_counters(p4info):
 def read_direct_counters(p4info, table_name):
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
     for switch_id, switch in switches.items():
-        print('\n----- Reading ipv4_ids table counters for %s -----' % switch.name)
+        print('\n----- Reading ipv4_nids table counters for %s -----' % switch.name)
         for response in switch.ReadDirectCounters(table_id = p4info_helper.get_tables_id(table_name)):
             print("Number of entries in direct counters ", len(response.entities))
             for entity in response.entities:

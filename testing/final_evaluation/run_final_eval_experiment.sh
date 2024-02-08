@@ -54,15 +54,15 @@ echo $amount_of_space_per_sw
 
 # Specify the data plane parameter
 packets_to_clone=200
-countmin_time_threshold=10
+countmin_aging_threshold=10
 countmin_width=16384
 echo $packets_to_clone
-echo $countmin_time_threshold
+echo $countmin_aging_threshold
 echo $countmin_width
 
 # Update the data plane parameters
 sed -i -e 's|MAX_PACKETS=[^;]*|MAX_PACKETS='$packets_to_clone'|' $src_folder"/include/header.p4"
-sed -i -e 's|COUNTMIN_TIME_THRESHOLD^;]*|COUNTMIN_TIME_THRESHOLD='$countmin_time_threshold'|' $src_folder"/include/header.p4"
+sed -i -e 's|COUNTMIN_AGING_THRESHOLD^;]*|COUNTMIN_AGING_THRESHOLD='$countmin_aging_threshold'|' $src_folder"/include/header.p4"
 sed -i -e 's|COUNTMIN_WIDTH=[^;]*|COUNTMIN_WIDTH='$countmin_width'|' $src_folder"/include/header.p4"
 
 # Create the snort log folders

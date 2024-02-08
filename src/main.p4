@@ -10,8 +10,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     counter(64, CounterType.packets) received;
     counter(64, CounterType.packets) ids_flow;
 
-    direct_counter(CounterType.packets_and_bytes) ipv4_ids_table_hit_counter;
-    direct_counter(CounterType.packets_and_bytes) ipv6_ids_table_hit_counter;
+    direct_counter(CounterType.packets_and_bytes) ipv4_nids_table_hit_counter;
+    direct_counter(CounterType.packets_and_bytes) ipv6_nids_table_hit_counter;
 
     // Registers for the countmin sketch
     register<bit<10>>(COUNTMIN_WIDTH) cm_limiter1;
@@ -47,7 +47,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
     /**** IDS Tables ****/
 
-    table ipv4_ids {
+    table ipv4_nids {
         actions = {
             pass;
             clone_to_ids;
@@ -63,10 +63,10 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         }
         size = 10240;
         default_action = pass();
-        counters = ipv4_ids_table_hit_counter;
+        counters = ipv4_nids_table_hit_counter;
     }
 
-    table ipv6_ids{
+    table ipv6_nids{
         actions = {
             pass;
             clone_to_ids;
@@ -82,7 +82,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         }
         size = 10240;
         default_action = pass();
-        counters = ipv6_ids_table_hit_counter;
+        counters = ipv6_nids_table_hit_counter;
     }
 
     /**** Fowarding Table ****/
@@ -214,15 +214,15 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
             // Checks if packet match an IDS rule and determines the approriate egress port
             if (hdr.ip.v4.isValid()){
-               ipv4_ids.apply();
+               ipv4_nids.apply();
             }else if(hdr.ip.v6.isValid()){
-               ipv6_ids.apply();
+               ipv6_nids.apply();
             }
 
             // Updates the global phase tracker if the aging threshold has elapsed
             last_packet_timestamp.read(last_timestamp, 0);
             bit<48> time_diff = standard_metadata.ingress_global_timestamp - last_timestamp;
-            if (time_diff > ONE_SECOND * COUNTMIN_TIME_THRESHOLD) {
+            if (time_diff > ONE_SECOND * COUNTMIN_AGING_THRESHOLD) {
                 bit<16> global_phase_id = 0;
                 global_phase_tracker.read(global_phase_id, 0);
                 global_phase_id = global_phase_id + 1;
