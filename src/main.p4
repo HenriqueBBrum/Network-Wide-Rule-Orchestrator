@@ -121,37 +121,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         }
     }
 
-
-     // Reads the countmin sketch and returns the min count found in all four rows
-    action read_cm_limiter(bit<16> protocol, bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port) {
-        bit<32> flow_hash1;
-        bit<32> flow_hash2;
-        bit<32> flow_hash3;
-        bit<32> flow_hash4;
-
-        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
-        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
-        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
-        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
-
-        current_min = 1023;
-        bit<10> aux;
-        cm_limiter1.read(aux, flow_hash1);
-        current_min = aux < current_min ? aux : current_min;
-
-        cm_limiter2.read(aux, flow_hash2);
-        current_min = aux < current_min ? aux : current_min;
-
-        cm_limiter3.read(aux, flow_hash3);
-        current_min = aux < current_min ? aux : current_min;
-
-        cm_limiter4.read(aux, flow_hash4);
-        current_min = aux < current_min ? aux : current_min;
-    }
-
-
-    // Updates the entries for a flow in the countmin sketch if a new packet from the flow has arrived
-    action increment_cm_limiter(bit<16> protocol, bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port) {
+    // Updates the entries for a flow in the count-min sketch if a new packet from the flow has arrived
+    action update_count_min(bit<16> protocol, bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port) {
         bit<32> flow_hash1;
         bit<32> flow_hash2;
         bit<32> flow_hash3;
@@ -196,6 +167,33 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
         phase_id_tracker4.write(flow_hash4, global_phase_id);
     }
 
+     // Reads the count-min sketch and returns the min count found in all four rows
+    action query_count_min(bit<16> protocol, bit<128> src_ip, bit<128> dst_ip, bit<16> src_port, bit<16> dst_port) {
+        bit<32> flow_hash1;
+        bit<32> flow_hash2;
+        bit<32> flow_hash3;
+        bit<32> flow_hash4;
+
+        hash(flow_hash1, HashAlgorithm.crc16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
+        hash(flow_hash2, HashAlgorithm.csum16, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
+        hash(flow_hash3, HashAlgorithm.crc16_custom, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
+        hash(flow_hash4, HashAlgorithm.crc32, 32w0, {src_ip, dst_ip, src_port, dst_port, protocol}, COUNTMIN_WIDTH);
+
+        current_min = 1023;
+        bit<10> aux;
+        cm_limiter1.read(aux, flow_hash1);
+        current_min = aux < current_min ? aux : current_min;
+
+        cm_limiter2.read(aux, flow_hash2);
+        current_min = aux < current_min ? aux : current_min;
+
+        cm_limiter3.read(aux, flow_hash3);
+        current_min = aux < current_min ? aux : current_min;
+
+        cm_limiter4.read(aux, flow_hash4);
+        current_min = aux < current_min ? aux : current_min;
+    }
+
 
     // **** Aply block ****
     apply {
@@ -235,8 +233,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
             }
 
             if(meta.ids_table_match){
-                increment_cm_limiter(meta.protocol, src_IP, dst_IP, meta.srcPort, meta.dstPort);
-                read_cm_limiter(meta.protocol, src_IP, dst_IP, meta.srcPort, meta.dstPort);
+                update_count_min(meta.protocol, src_IP, dst_IP, meta.srcPort, meta.dstPort);
+                query_count_min(meta.protocol, src_IP, dst_IP, meta.srcPort, meta.dstPort);
                 // If this flow ID is not in Count-min Sketch, meaning it is an unknown flow
                 if(current_min == 1){
                     ids_flow.count((bit<32>) 1);
