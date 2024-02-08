@@ -214,10 +214,10 @@ With the folders updated, strat the kernl and run all cells to plot the graphs. 
 The baseline alerts used to compare against the experiments alerts were obtained through the following method:
 
 ```
-snort -c snort.lua --rule-path <rule-path> -R <pcap-file> -A alert_json --lua "alert_json = {file = true}"
+snort -c snort.lua --rule-path <rule-path> -R <pcap-file-location> -A alert_json --lua "alert_json = {file = true}"
 ```
 
-This command runs Snort 3 with a ruleset as input and an input PCAP. The input rulesets are in the `snort/rules` folder. The ouput alerts file is save
+This command runs Snort 3 using the ruleset located in `<rule-path>` and analyzes the network traffic of the PCAP file located at `<pcap-file-location>`. The rulesets used for testing are stored in the `snort/rules` folder. The output alerts file, containing all generated alerts, is saved in the same location where the command is executed.
 
 
 ## Evaluating new topologies
