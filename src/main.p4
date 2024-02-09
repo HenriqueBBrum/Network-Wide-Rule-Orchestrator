@@ -32,7 +32,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
 
     // Variables for flow expiring mechanism
     bit<48> last_timestamp = 0;
-    register<bit<48>>(1) last_packet_timestamp;
+    register<bit<48>>(1) last_phase_transition_time;
 
 
     /**** Actions ****/
@@ -220,7 +220,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
             }
 
             // Updates the global phase tracker if the aging threshold has elapsed
-            last_packet_timestamp.read(last_timestamp, 0);
+            last_phase_transition_time.read(last_timestamp, 0);
             bit<48> time_diff = standard_metadata.ingress_global_timestamp - last_timestamp;
             if (time_diff > ONE_SECOND * COUNTMIN_AGING_THRESHOLD) {
                 bit<16> global_phase_id = 0;
@@ -229,7 +229,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
                 global_phase_tracker.write(0, global_phase_id);
 
                 log_msg("New timeout");
-                last_packet_timestamp.write(0, standard_metadata.ingress_global_timestamp); // update
+                last_phase_transition_time.write(0, standard_metadata.ingress_global_timestamp); // update
             }
 
             if(meta.ids_table_match){
