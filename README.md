@@ -197,7 +197,7 @@ In the testing folder, run the command:
 jupyter lab --NotebookApp.iopub_data_rate_limit=1.0e10
 ```
 
-Before executing the notebook's cells, update the experiment's input folder and the output folder in the Parse the parameters evaluation experiments code.
+Open the `parameters_eval_....ibpn` in your browser. Before executing the notebook's cells, update the experiment's input folder and the output folder in the `Parse the parameters evaluation experiments` code.
 > Change the output folder to avoid collisions with the graphs of this repository.
 
 With the folders updated, strat the kernl and run all cells to plot the graphs. That`s it, the dataplane parameters evaluation is over.
@@ -214,9 +214,42 @@ The table etnires offloading algorihtms:
  - Memory avialabiltiy scenarios
  - 	100%,75%,50%,25%
 
+> The ... experiments with all combinations of the above "variables".
 
+If you run the dataplane parameters before these experiments there is the need to adjust the code. Go back to section ... and perfomr the possite functions. If the action was to comment, non uncomment the section and vice=versa.
 
-### Run individual experiments
+If you ahven'nt, everyghitn is setup.
+
+Thedataplane parameters are se tto: just like in the papers experiments.
+To obatin the results, first, create an output folder in any location you like; for example:
+```
+mkdir ~/Documents/...evaluation
+```
+
+Then, run the following command in the terminal:
+```
+./...evaluation ~/Documents/...evaluation
+```
+
+> Always provide the full path, not a relative path, to the output folder.
+
+This evaluation takes a long time, but not as long as the dataplane parameters evaluation. 
+
+The last step is to create the CSV table with all results and plot the graphs. For this, install Jupyter if you havent:
+
+```
+pip install jupyterlab
+```
+
+Then, in the testing folder, run the command:
+```
+jupyter lab --NotebookApp.iopub_data_rate_limit=1.0e10
+```
+
+Open the `evaluation....ibpn` in your browser. Before executing the notebook's cells, update the experiment's input folder and the output folder in the `Parse the parameters evaluation experiments` code.
+> Change the output folder to avoid collisions with the graphs of this repository.
+
+With the folders updated, strat the kernl and run all cells to generate the CSV table and plot the graphs. That`s it, the ... evaluation is over and ....
 
 
 ## Obtaining the baseline alerts
@@ -230,4 +263,4 @@ snort -c snort.lua --rule-path <rule-path> -R <pcap-file-location> -A alert_json
 This command runs Snort 3 using the ruleset located in `<rule-path>` and analyzes the network traffic of the PCAP file located at `<pcap-file-location>`. The rulesets used for testing are stored in the `snort/rules` folder. The output alerts file, containing all generated alerts, is saved in the same location where the command is executed.
 
 
-## Evaluating new topologies
+## Undestading how the files are linked and how the code works
