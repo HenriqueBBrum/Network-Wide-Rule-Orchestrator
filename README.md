@@ -205,6 +205,16 @@ With the folders updated, strat the kernl and run all cells to plot the graphs. 
 
 ### Final evaluation
 
+The ... evaluation assesse the three table etnries offlading algorihtms, in two topologies with 4 memory availability scenarios:
+
+The table etnires offloading algorihtms:
+- Simple, first-fit, best-fit
+- Topologies
+	- Linear and Tree
+ - Memory avialabiltiy scenarios
+ - 	100%,75%,50%,25%
+
+
 
 ### Run individual experiments
 
