@@ -7,7 +7,7 @@ This repository contains the code and instructions to replicate the results of t
 - [Repository structure](#repository-structure)
 - [Replicating the experiments](#replicating-the-experiments)
 - [Obtaining the baseline alerts](#obtaining-the-baseline-alerts)
-- [Evaluating new topologies](#evaluating-new-topologies)
+- [Understading the code](#understading-the-code)
 
 ## Installation process
 
@@ -140,7 +140,7 @@ After this process ends, the enviroment is configured and ready to run the exper
 
 ## Replicating the experiments
 
-There are two set of experiments to replicate: the [data plane parameters evaluation](#data-plane-parameters-evaluation), and the [final evaluation](#final-evaluation). The first evaluates different data plane configurations to decide on the best one. The latter evaluates the network-wide offloading algorithms with two topologies, linear and tree, using different memory availability scenarios in the switches.
+There are two set of experiments to replicate: the [data plane parameters evaluation](#data-plane-parameters-evaluation), and the [network-wide offloading algorithms evaluation](#network-wide-offloading-algorithms-evaluation). The first evaluates different data plane configurations to decide on the best one. The latter evaluates the network-wide offloading algorithms with two topologies, linear and tree, using different memory availability scenarios in the switches.
 
 ### Data plane parameters evaluation
 
@@ -183,7 +183,7 @@ Then, run the following command in the terminal:
 ./evaluate_parameters ~/Documents/dataplane_parameters_evaluation
 ```
 
-> Always provide the full path, not a relative path, to the output folder.
+> Always provide the full path, not a relative path, for the output folder parameter.
 
 The complete parameters evaluation takes a LONG time. There are roughly 55 million packets being sent at a rate of 1000 packest/s (due to BMv2 limited perfromance), which traslate to 15 hours to evaluate each parameters. There are 105 combiantions, so...it takes a VERY LONG TIME. If you wish to reduce the number of parameters to evaluate, feel free to do so.
 
@@ -197,16 +197,60 @@ In the testing folder, run the command:
 jupyter lab --NotebookApp.iopub_data_rate_limit=1.0e10
 ```
 
-Before executing the notebook's cells, update the experiment's input folder and the output folder in the Parse the parameters evaluation experiments code.
+Open the `parameters_eval_plots.ipynb` in your browser. Before executing the notebook's cells, update the experiment's input folder and the output folder in the `Parse the parameters evaluation experiments` code.
 > Change the output folder to avoid collisions with the graphs of this repository.
 
-With the folders updated, strat the kernl and run all cells to plot the graphs. That`s it, the dataplane parameters evaluation is over.
+With the folders updated, strat the kernl and run all cells to plot the graphs. That`s it, the dataplane parameters evaluation is over. ANalyze the results and compare with the ones in our paper.
 
 
-### Final evaluation
+### Network-wide offloading algorithms evaluation
+
+The network-wide offloading algorithms evaluation assesses the three table entries offloading algorihtms in two network topologies with 4 memory availability scenarios:
+
+- The table entries offloading algorihtms are:
+	- Simple, first-fit, best-fit.
+- The topologies evaluated include: 
+	- 5 swicthes linear and tree
+ - Memory avialabiltiy scenarios for each switch in the network:
+	 - 100%,75%,50%,25%
+ 
+> The memory avialability refers to hte aount of table etnries to offload a swtich can recevie. FOr example, 100% mean all switches in the network can receive all table entries, whereas 25% means the swtiches can receive only 25% of the table entries to offload.
 
 
-### Run individual experiments
+Before running the experiments, first it is necessary to fix some parts of the code. If you haven't run the "Data plane parameters evaluation" you can skip this part. Otherwise, go back to the [data plane parameters evaluation](#data-plane-parameters-evaluation), and perfrom the opposite action in the code. THis means that if the action was to comment, you need to uncomment the section mentioned code and vice=versa.
+
+The dataplane parameters are set to: _N_ = 200, _T_ = 10, and _W_ = 16384, just like in the papers experiments.
+
+
+To start the evaluation, first, create an output folder in any location you like; for example:
+```
+mkdir ~/Documents/algorithms_evaluation
+```
+
+Then, run the following command in the terminal:
+```
+./algorithms_evaluation ~/Documents/algorithms_evaluation
+```
+
+> Always provide the full path, not a relative path, for the output folder parameter.
+
+This evaluation takes a long time, but not as long as the dataplane parameters evaluation. 
+
+The last step is to generate the CSV table with all results and plot the graphs. For this, install Jupyter if you havent:
+
+```
+pip install jupyterlab
+```
+
+Then, in the testing folder, run the command:
+```
+jupyter lab --NotebookApp.iopub_data_rate_limit=1.0e10
+```
+
+Open the `algorihtms_evaluation_plots.ipynb` in your browser. Before executing the notebook's cells, update the experiment's input folder and the output folder in the `Parse the parameters evaluation experiments` code.
+> Change the output folder to avoid collisions with the graphs of this repository.
+
+With the folders updated, start the kernel and run all cells to generate the CSV table and plot the graphs. That`s it, the network-wide table etnries offloading algorihtms evaluation is over. ANalyze the results and compare with the ones in our paper.
 
 
 ## Obtaining the baseline alerts
@@ -220,4 +264,23 @@ snort -c snort.lua --rule-path <rule-path> -R <pcap-file-location> -A alert_json
 This command runs Snort 3 using the ruleset located in `<rule-path>` and analyzes the network traffic of the PCAP file located at `<pcap-file-location>`. The rulesets used for testing are stored in the `snort/rules` folder. The output alerts file, containing all generated alerts, is saved in the same location where the command is executed.
 
 
-## Evaluating new topologies
+## Understading the code 
+
+This last section explains how every piece of code is interlinked and how they work. The purpose of this explanation is to faciliatet the inclusion of new alogirhtms, topologies, and whatever comes to mind to thsi code for further experimentation.
+
+1. The `testint...` file runs the desired evaluation. It can be the ... file for the ... evaluation or the ... script for the .. evlaution. Both ot fthem present a similar code. Thye check the need parameters and run all the combinations of the experiments. For each combination they run another script.
+2. The .. script run inside the .. sfiles, are the main executing script of the program. They, change the configuration of each experiment, build the MIninet topology with P4 siwtches, and save the ouput files to the desired folders.
+	- The .. scrip changes this and taht
+ 	- The .. fiel modifies this and that
+3. The config file ,odified by both ... does ...
+4. They also modifiey the p4 files to ....
+5. The last file modified, but only hy the .. is the `networ_info` file of a tpology. IN this file, the ...
+6. After changing all configuartion values the run scripts, iterate over all pcap file for testing. In this case the CICIDS2017 pCpa. Create the snort log folder for the switches, updates the input pcap file in the config file, creates the Mininer ntwork and starts the experiments.
+7. The make ... command creates the tpology and runs the experiments.
+	1. FIrst, it build the minnet topology and the swtiches. The switches working is detailed in the min.p4 file
+ 	2. THen, it starts the testing process at the `run` file lines... In these testing process it also determins the table to offload according to the `..`file. In this file the offloading algorihtms are detailed.
+8. With the swithces built, the table entries offloaded. The command in the config file are executed. The last command is the tcpreplay command to send the desiderd nettwro trafic.
+9. When all packets of PCAP are sent, the data plane information is read and saved to a file. MIninet is closed, and the important data is copyed to the desired output folder.
+10. Processe 6 to 9 are executed for every pcap while process 3 to 9 is done for every evaluationc ombination.
+
+
