@@ -208,9 +208,9 @@ With the folders updated, strat the kernl and run all cells to plot the graphs. 
 The network-wide offloading algorithms evaluation assesses the three table entries offloading algorihtms in two network topologies with 4 memory availability scenarios:
 
 - The table entries offloading algorihtms are:
-	- Simple, first-fit, best-fit.
+	- Simple, First-Fit, Best-Fit.
 - The topologies evaluated include: 
-	- 5 swicthes linear and tree
+	- 5 switches linear and tree
  - Memory avialabiltiy scenarios for each switch in the network:
 	 - 100%,75%,50%,25%
  
@@ -268,7 +268,7 @@ This command runs Snort 3 using the ruleset located in `<rule-path>` and analyze
 
 This last section explains how every piece of code is interlinked and how they work. The purpose of this explanation is to faciliatet the inclusion of new alogirhtms, topologies, and whatever comes to mind to thsi code for further experimentation.
 
-1. The `testint...` file runs the desired evaluation. It can be the ... file for the ... evaluation or the ... script for the .. evlaution. Both ot fthem present a similar code. Thye check the need parameters and run all the combinations of the experiments. For each combination they run another script.
+1. The `testing...` file runs the desired evaluation. It can be the ... file for the ... evaluation or the ... script for the .. evlaution. Both ot fthem present a similar code. Thye check the need parameters and run all the combinations of the experiments. For each combination they run another script.
 2. The .. script run inside the .. sfiles, are the main executing script of the program. They, change the configuration of each experiment, build the MIninet topology with P4 siwtches, and save the ouput files to the desired folders.
 	- The .. scrip changes this and taht
  	- The .. fiel modifies this and that
