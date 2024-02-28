@@ -39,7 +39,7 @@ for topology in {"linear","tree"}; do
 			results_folder=${output_folder}/${topology}_${offloading_algorithm}_${available_space}_registered_random/
 			mkdir $results_folder
 
-			./run_final_eval_experiment.sh $results_folder $ruleset_folder $table_entries_file $topology $offloading_algorithm $space_per_sw 
+			./run_algorithms_experiment.sh $results_folder $ruleset_folder $table_entries_file $topology $offloading_algorithm $space_per_sw 
 		done;
 	done;
 done;

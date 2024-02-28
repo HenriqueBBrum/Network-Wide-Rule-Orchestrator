@@ -123,9 +123,10 @@ After this process ends, the enviroment is configured and ready to run the exper
 	- **`p4_table_entries*.config`**: The table entries to offload;
 
 - **`testing/`**: The testing and plotting files;
-	- **`dataplane_parameters_evaluation.json`**: The testing and plotting files for the dataplane parameters evaluation where the dataplane algorithms parameters are evaluated;
-	- **`experiment_configuration.json`**: The configuration files for each topology. These files contanin configurations for the table entries offloading programa and the experiemnts's Mininet nodes;
-	- **`final_evaluation.json`**: The testing and plotting files for the final evaluation with different offloading algorithms and topologies;
+	- **`algorithms_evaluation/`**: The testing and plotting files for the final evaluation with different offloading algorithms and topologies;	
+	- **`dataplane_parameters_evaluation/`**: The testing and plotting files for the dataplane parameters evaluation where the dataplane algorithms parameters are evaluated;
+	- **`experiment_configuration/`**: The configuration files for each topology. These files contanin configurations for the table entries offloading programa and the experiemnts's Mininet nodes;
+	
 
 - **`utils/`**: Folder containing Python files that interact with Mininet and the P4Runtime;
 	- **`offload_table_entries.py`**: File responsbile for offloading the table entries to the swtiches according to the offloading algorithm;
@@ -206,9 +207,9 @@ With the folders updated, strat the kernl and run all cells to plot the graphs. 
 
 ### Network-wide offloading algorithms evaluation
 
-The evaluation of the network-wide offloading algorithms assesses the three table entries offloading algorihtms in two network topologies with 4 memory availability scenarios:
+The evaluation of the network-wide offloading algorithms assesses the three table entries offloading algorithm in two network topologies with 4 memory availability scenarios:
 
-- The table entries offloading algorihtms are:
+- The table entries offloading algorithm are:
 	- Simple, First-Fit, Best-Fit.
 - The topologies evaluated include: 
 	- 5 switches linear and tree
@@ -229,7 +230,7 @@ mkdir ~/Documents/algorithms_evaluation
 
 Then, enter the `algorithms_evaluation/` folder in the `testing` directory, and run the following command in the terminal:
 ```
-./algorithms_evaluation ~/Documents/algorithms_evaluation
+./evaluate_algorithms. ~/Documents/algorithms_evaluation
 ```
 
 > Always provide the full path, rather than a relative path, for the output folder parameter.
@@ -247,10 +248,10 @@ Then, in the testing folder, run the command:
 jupyter lab --NotebookApp.iopub_data_rate_limit=1.0e10
 ```
 
-Open the `algorihtms_evaluation_plots.ipynb` in your browser. Before executing the notebook's cells, update the experiment's input folder and the output folder in the `Parse the parameters evaluation experiments` section.
+Open the `algorithm_evaluation_plots.ipynb` in your browser. Before executing the notebook's cells, update the experiment's input folder and the output folder in the `Parse the parameters evaluation experiments` section.
 > Change the output folder to avoid collisions with the graphs of this repository.
 
-With the folders updated, start the kernel and run all cells to generate the CSV table and plot the graphs. That`s it, the network-wide table entries offloading algorihtms evaluation is over. Analyze the results and compare with the ones in our paper.
+With the folders updated, start the kernel and run all cells to generate the CSV table and plot the graphs. That`s it, the network-wide table entries offloading algorithm evaluation is over. Analyze the results and compare with the ones in our paper.
 
 ## Obtaining the Baseline Alerts
 
@@ -277,7 +278,7 @@ This last section explains how every piece of code is interlinked and how they w
 6. After changing all configuartion values the run scripts, iterate over all pcap file for testing. In this case the CICIDS2017 pCpa. Create the snort log folder for the switches, updates the input pcap file in the config file, creates the Mininer ntwork and starts the experiments.
 7. The make ... command creates the tpology and runs the experiments.
 	1. FIrst, it build the minnet topology and the swtiches. The switches working is detailed in the min.p4 file
- 	2. THen, it starts the testing process at the `run` file lines... In these testing process it also determins the table to offload according to the `..`file. In this file the offloading algorihtms are detailed.
+ 	2. THen, it starts the testing process at the `run` file lines... In these testing process it also determins the table to offload according to the `..`file. In this file the offloading algorithm are detailed.
 8. With the swithces built, the table entries offloaded. The command in the config file are executed. The last command is the tcpreplay command to send the desiderd nettwro trafic.
 9. When all packets of PCAP are sent, the data plane information is read and saved to a file. MIninet is closed, and the important data is copyed to the desired output folder.
 10. Processe 6 to 9 are executed for every pcap while process 3 to 9 is done for every evaluationc ombination.-->
