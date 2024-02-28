@@ -4,7 +4,7 @@
 
 	"network_info": "../src/topologies/parameters_eval/network_info.json",
 	"table_entries_file": "../src/p4_table_entries_random.config",
-	"table_entries_distribution_algorithm": "simple",
+	"offloading_algorithm": "parameters_eval",
 
 	"devices":[
 		{

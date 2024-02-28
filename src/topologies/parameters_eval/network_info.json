@@ -1,4 +1,10 @@
 {
+    "hosts": {
+        "hsource": {"ip": "10.0.1.10/24"},
+        "hsnort": {"ip": "10.0.1.20/24"},
+
+        "h2": {"ip": "10.0.1.30/24"}
+    },
     "switches": {
         "s1": {
             "free_table_entries" : 1465,
@@ -7,5 +13,7 @@
         }
     },
     "links": [
+        ["hsource", "s1"],["h2", "s1"],
+        ["hsnort", "s1"]
     ]
 }
