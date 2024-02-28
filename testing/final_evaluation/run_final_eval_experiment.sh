@@ -1,3 +1,5 @@
+# Evaluate one scenario
+
 #!/bin/bash
 scriptdir="$(dirname "$0")"
 cd $scriptdir
@@ -27,7 +29,7 @@ then
 	exit 1
 fi
 
-config_file=$parent_path"/experiment_configuration/"$topology".json"
+config_file=$parent_path"/../experiment_configuration/"$topology".json"
 
 # Update the rule's path in the configuration file
 sed -i -e 's|--rule-path [^ ]*|--rule-path '$ruleset_folder'|' $config_file
@@ -39,10 +41,10 @@ sed -i -e 's|"table_entries_file": [^,]*|"table_entries_file": "'$table_entries_
 sed -i -e 's|"offloading_algorithm": [^,]*|"offloading_algorithm": "'$offloading_algorithm'"|' $config_file
 
 # Update topology in Makefile
-sed -i -e 's|TOPO = topologies/[^/]*|TOPO = topologies/'$topology'|' ../src/Makefile
+sed -i -e 's|TOPO = topologies/[^/]*|TOPO = topologies/'$topology'|' $src_folder"/Makefile"
 
 # Update available memory space in sswitches in the "network_info" file
-sed -i -e 's|"free_table_entries" : [^,]*|"free_table_entries" : '$space_per_sw'|' "../src/topologies/"$topology"/network_info.json"
+sed -i -e 's|"free_table_entries" : [^,]*|"free_table_entries" : '$space_per_sw'|' $src_folder"/topologies/"$topology"/network_info.json"
 
 echo $ruleset_folder
 echo $table_entries_file
@@ -51,49 +53,50 @@ echo $offloading_algorithm
 echo $space_per_sw
 
 # Specify the data plane parameter
-n_redirected_packets=200
-time_threshold=10
-count_min_size=16384
-echo $n_redirected_packets
-echo $time_threshold
-echo $count_min_size
+packets_to_clone=200
+countmin_aging_threshold=10
+countmin_width=16384
+echo $packets_to_clone
+echo $countmin_aging_threshold
+echo $countmin_width
 
-# Update data plane parameters
-sed -i -e 's|MAX_PACKETS=[^;]*|MAX_PACKETS='$n_redirected_packets'|' ../src/include/header.p4
-sed -i -e 's|COUNT_MIN_SIZE=[^;]*|COUNT_MIN_SIZE='$count_min_size'|' ../src/include/header.p4
-sed -i -e 's|TIME_THRESHOLD=[^;]*|TIME_THRESHOLD='$time_threshold'|' ../src/include/header.p4
+# Update the data plane parameters
+sed -i -e 's|MAX_PACKETS=[^;]*|MAX_PACKETS='$packets_to_clone'|' $src_folder"/include/header.p4"
+sed -i -e 's|COUNTMIN_AGING_THRESHOLD^;]*|COUNTMIN_AGING_THRESHOLD='$countmin_aging_threshold'|' $src_folder"/include/header.p4"
+sed -i -e 's|COUNTMIN_WIDTH=[^;]*|COUNTMIN_WIDTH='$countmin_width'|' $src_folder"/include/header.p4"
 
 # Create the snort log folders
 mkdir ../snort/logs
 
 # Emulate with each PCAP in the CIC-IDS 2017 dataset
-for pcap in ../../CICIDS2017-PCAPS/*; do
-	mkdir ../snort/logs/eth0
-	mkdir ../snort/logs/hsnort-eth1
-	mkdir ../snort/logs/hsnort-eth2
-	mkdir ../snort/logs/hsnort-eth3
-	mkdir ../snort/logs/hsnort-eth4
+for pcap in ../../../CICIDS2017-PCAPS/*; do
+	mkdir $snort_folder"/logs/eth0"
+	mkdir $snort_folder"/logs/hsnort-eth1"
+	mkdir $snort_folder"/logs/hsnort-eth2"
+	mkdir $snort_folder"/logs/hsnort-eth3"
+	mkdir $snort_folder"/logs/hsnort-eth4"
 
 	pcap_name=$(echo $pcap | sed "s/.*\///")
 	sed -i -e 's|CICIDS2017-PCAPS\/[^"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
 
 	# Run the experiment
-	cd ../src
+	cd $src_folder
 	make clean
 	make TEST_JSON=$config_file > $output_folder"output.txt"
 
+	# Save the results of the experiment
+	cd $parent_path
 	weekday=$(echo $pcap_name | sed "s|-.*||")
 	mkdir $output_folder/$weekday
 	mv $output_folder"output.txt" $output_folder/$weekday
-
-	sudo chmod -R a+rwx ../snort/logs/*
-	cp -r ../snort/logs/* $output_folder/$weekday
-	rm -r ../snort/logs/*
-
-	cd ../testing
+	
+	# Clean snort outputs
+	sudo chmod -R a+rwx "$snort_folder"/logs/*
+	cp -r "$snort_folder"/logs/* $output_folder/$weekday
+	rm -r "$snort_folder"/logs/*
 done;
 
-cd ../src
+cd $src_folder
 make clean
 
 stty erase ^H

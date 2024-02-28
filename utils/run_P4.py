@@ -381,10 +381,10 @@ class ExerciseRunner:
 
         #     sleep(1)
 
-        # print('Ending test')
-        # read_counters(self.test["p4info"])
-        # read_direct_counters(self.test["p4info"], "ipv4_ids")
-        # shutdown_switches()
+        print('Ending test')
+        read_counters(self.test["p4info"])
+        read_direct_counters(self.test["p4info"], "ipv4_nids")
+        shutdown_switches()
 
 
 

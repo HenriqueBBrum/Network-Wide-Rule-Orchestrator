@@ -10,10 +10,8 @@ then
 	exit 1
 fi
 
-
 output_folder=$1
 ruleset_folder=$2
-
 
 if [ ! -d $output_folder ]
 then
@@ -26,13 +24,13 @@ then
 	ruleset_folder="../snort/rules/snort3-registered"
 fi
 
-
-for n_cloned_packets in {10,25,50,100,200,400,800}; do
-	for t_count_min_ageing_time_threshold in {10,25,50}; do
-		for w_count_min_size in {256,512,1024,4096,16834}; do
-			results_folder=${output_folder}/${n_cloned_packets}_${t_count_min_ageing_time_threshold}_${w_count_min_size}_registered/
+# Run an experiment with each one of the following parameters:
+for packets_to_clone in {10,25,50,100,200,400,800}; do
+	for countmin_aging_threshold in {10,25,50}; do
+		for countmin_width in {256,512,1024,4096,16834}; do
+			results_folder=${output_folder}/${packets_to_clone}_${countmin_aging_threshold}_${countmin_width}_registered/
 			mkdir $results_folder
-			./run_parameter_experiment.sh $results_folder $ruleset_folder $n_cloned_packets $t_count_min_ageing_time_threshold $w_count_min_size
+			./run_parameter_experiment.sh $results_folder $ruleset_folder $packets_to_clone $countmin_aging_threshold $countmin_width
 		done;
 	done;
 done;

@@ -5,28 +5,22 @@
   "table_entries": [
     {
       "table": "MyIngress.ipv4_lpm",
-      "default_action": true,
-      "action_name": "MyIngress.drop",
-      "action_params": { }
-    },
-    {
-      "table": "MyIngress.ipv4_lpm",
-      "match": {
-        "hdr.ip.v4.dstAddr": ["192.168.10.0", 27]
-      },
-      "action_name": "MyIngress.ipv4_forward",
-      "action_params": {
-        "port": 3
-      }
-    },
-    {
-      "table": "MyIngress.ipv4_lpm",
       "match": {
         "hdr.ip.v4.dstAddr": ["172.16.0.0", 16]
       },
       "action_name": "MyIngress.ipv4_forward",
       "action_params": {
-        "port": 3
+        "port": 5
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["205.174.165.66", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 4
       }
     },
     {
@@ -36,13 +30,133 @@
       },
       "action_name": "MyIngress.ipv4_forward",
       "action_params": {
+        "port": 4
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.50", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 4
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.51", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 4
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.3", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
         "port": 3
       }
     },
     {
       "table": "MyIngress.ipv4_lpm",
       "match": {
-        "hdr.ip.v4.dstAddr": ["205.174.165.66", 32]
+        "hdr.ip.v4.dstAddr": ["192.168.10.5", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 3
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.8", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 3
+      }
+    }, 
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.9", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 3
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.12", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 3
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.14", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 3
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.15", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 3
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.16", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 3
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.17", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 3
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.19", 32]
+      },
+      "action_name": "MyIngress.ipv4_forward",
+      "action_params": {
+        "port": 3
+      }
+    },
+    {
+      "table": "MyIngress.ipv4_lpm",
+      "match": {
+        "hdr.ip.v4.dstAddr": ["192.168.10.25", 32]
       },
       "action_name": "MyIngress.ipv4_forward",
       "action_params": {

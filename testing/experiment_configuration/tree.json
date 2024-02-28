@@ -3,7 +3,7 @@
 	"bmv2_json": "../src/build/main.json",
 
 	"network_info": "../src/topologies/tree/network_info.json",
-	"table_entries_file": "../src/p4_table_entries.config",
+	"table_entries_file": "../src/p4_table_entries_random.config",
 	"offloading_algorithm": "firstfit",
 
 	"devices":[
@@ -17,6 +17,6 @@
 		},
 		{
 			"name":"hsource",
-			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/Friday-WorkingHours.pcap"]
+			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/*"]
 		}]
 }
