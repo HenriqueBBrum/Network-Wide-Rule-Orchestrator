@@ -1,13 +1,13 @@
 # Network-wide Rule Orchestrator
 
-This repository contains the code and instructions to replicate the results of the paper ()[]. 
+This repository contains the code and instructions to replicate the results of my Master's Dissertation entitled:: ()[]. 
 
 ## **Table of Contents**
 - [Installation process](#installation-process)
 - [Repository structure](#repository-structure)
 - [Replicating the experiments](#replicating-the-experiments)
 - [Obtaining the baseline alerts](#obtaining-the-baseline-alerts)
-- [Understading the code](#understading-the-code)
+  <!---[Understading the code](#understading-the-code)-->
 
 ## Installation process
 
@@ -178,12 +178,13 @@ With these changes done, create an output folder in any location you like; for e
 mkdir ~/Documents/dataplane_parameters_evaluation
 ```
 
-Then, run the following command in the terminal:
+Then,  enter the `dataplane_parameters_evaluation/` folder in the `testing/` directory, and run the following command in the terminal:
 ```
+cd Network-Wide-Rule-Orchestrator/testing/dataplane_parameters_evaluation
 ./evaluate_parameters ~/Documents/dataplane_parameters_evaluation
 ```
 
-> Always provide the full path, not a relative path, for the output folder parameter.
+> Always provide the full path, rather than a relative path, for the output folder parameter.
 
 The complete parameters evaluation takes a LONG time. There are roughly 55 million packets being sent at a rate of 1000 packest/s (due to BMv2 limited perfromance), which traslate to 15 hours to evaluate each parameters. There are 105 combiantions, so...it takes a VERY LONG TIME. If you wish to reduce the number of parameters to evaluate, feel free to do so.
 
@@ -205,7 +206,7 @@ With the folders updated, strat the kernl and run all cells to plot the graphs. 
 
 ### Network-wide offloading algorithms evaluation
 
-The network-wide offloading algorithms evaluation assesses the three table entries offloading algorihtms in two network topologies with 4 memory availability scenarios:
+The evaluation of the network-wide offloading algorithms assesses the three table entries offloading algorihtms in two network topologies with 4 memory availability scenarios:
 
 - The table entries offloading algorihtms are:
 	- Simple, First-Fit, Best-Fit.
@@ -214,29 +215,28 @@ The network-wide offloading algorithms evaluation assesses the three table entri
  - Memory avialabiltiy scenarios for each switch in the network:
 	 - 100%,75%,50%,25%
  
-> The memory avialability refers to hte aount of table etnries to offload a swtich can recevie. FOr example, 100% mean all switches in the network can receive all table entries, whereas 25% means the swtiches can receive only 25% of the table entries to offload.
+> The memory avialability refers to the amount of table entries a swtich can receive. For example, 100% means all switches in the network can receive all table entries, whereas 25% means the switches can receive only 25% of the table entries to offload.
 
-
-Before running the experiments, first it is necessary to fix some parts of the code. If you haven't run the "Data plane parameters evaluation" you can skip this part. Otherwise, go back to the [data plane parameters evaluation](#data-plane-parameters-evaluation), and perfrom the opposite action in the code. THis means that if the action was to comment, you need to uncomment the section mentioned code and vice=versa.
+Before conducting the experiments, it is necessary to adjust some parts of the code. If you haven't run the "Data plane parameters evaluation" you can skip this step. Otherwise, go back to the [data plane parameters evaluation](#data-plane-parameters-evaluation), check the modifications done, and perform the opposite action in the code. This means that if the action was to comment, you need to uncomment the mentioned code and vice-versa.
 
 The dataplane parameters are set to: _N_ = 200, _T_ = 10, and _W_ = 16384, just like in the papers experiments.
 
 
-To start the evaluation, first, create an output folder in any location you like; for example:
+To start the evaluation, create an output folder in any location you like; for example:
 ```
 mkdir ~/Documents/algorithms_evaluation
 ```
 
-Then, run the following command in the terminal:
+Then, enter the `algorithms_evaluation/` folder in the `testing` directory, and run the following command in the terminal:
 ```
 ./algorithms_evaluation ~/Documents/algorithms_evaluation
 ```
 
-> Always provide the full path, not a relative path, for the output folder parameter.
+> Always provide the full path, rather than a relative path, for the output folder parameter.
 
 This evaluation takes a long time, but not as long as the dataplane parameters evaluation. 
 
-The last step is to generate the CSV table with all results and plot the graphs. For this, install Jupyter if you havent:
+The last step is to generate the CSV table with all results and plot the graphs. For this, install Jupyter if you haven't:
 
 ```
 pip install jupyterlab
@@ -247,11 +247,10 @@ Then, in the testing folder, run the command:
 jupyter lab --NotebookApp.iopub_data_rate_limit=1.0e10
 ```
 
-Open the `algorihtms_evaluation_plots.ipynb` in your browser. Before executing the notebook's cells, update the experiment's input folder and the output folder in the `Parse the parameters evaluation experiments` code.
+Open the `algorihtms_evaluation_plots.ipynb` in your browser. Before executing the notebook's cells, update the experiment's input folder and the output folder in the `Parse the parameters evaluation experiments` section.
 > Change the output folder to avoid collisions with the graphs of this repository.
 
-With the folders updated, start the kernel and run all cells to generate the CSV table and plot the graphs. That`s it, the network-wide table etnries offloading algorihtms evaluation is over. ANalyze the results and compare with the ones in our paper.
-
+With the folders updated, start the kernel and run all cells to generate the CSV table and plot the graphs. That`s it, the network-wide table entries offloading algorihtms evaluation is over. Analyze the results and compare with the ones in our paper.
 
 ## Obtaining the baseline alerts
 
@@ -264,7 +263,7 @@ snort -c snort.lua --rule-path <rule-path> -R <pcap-file-location> -A alert_json
 This command runs Snort 3 using the ruleset located in `<rule-path>` and analyzes the network traffic of the PCAP file located at `<pcap-file-location>`. The rulesets used for testing are stored in the `snort/rules` folder. The output alerts file, containing all generated alerts, is saved in the same location where the command is executed.
 
 
-## Understading the code 
+<!---## Understading the code 
 
 This last section explains how every piece of code is interlinked and how they work. The purpose of this explanation is to faciliatet the inclusion of new alogirhtms, topologies, and whatever comes to mind to thsi code for further experimentation.
 
@@ -281,6 +280,6 @@ This last section explains how every piece of code is interlinked and how they w
  	2. THen, it starts the testing process at the `run` file lines... In these testing process it also determins the table to offload according to the `..`file. In this file the offloading algorihtms are detailed.
 8. With the swithces built, the table entries offloaded. The command in the config file are executed. The last command is the tcpreplay command to send the desiderd nettwro trafic.
 9. When all packets of PCAP are sent, the data plane information is read and saved to a file. MIninet is closed, and the important data is copyed to the desired output folder.
-10. Processe 6 to 9 are executed for every pcap while process 3 to 9 is done for every evaluationc ombination.
+10. Processe 6 to 9 are executed for every pcap while process 3 to 9 is done for every evaluationc ombination.-->
 
 
