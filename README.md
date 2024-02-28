@@ -3,13 +3,13 @@
 This repository contains the code and instructions to replicate the results of my Master's Dissertation entitled:: ()[]. 
 
 ## **Table of Contents**
-- [Installation process](#installation-process)
-- [Repository structure](#repository-structure)
-- [Replicating the experiments](#replicating-the-experiments)
-- [Obtaining the baseline alerts](#obtaining-the-baseline-alerts)
+- [Installation Process](#installation-process)
+- [Repository Structure](#repository-structure)
+- [Replicating the Experiments](#replicating-the-experiments)
+- [Obtaining the Baseline Alerts](#obtaining-the-baseline-alerts)
   <!---[Understading the code](#understading-the-code)-->
 
-## Installation process
+## Installation Process
 
 ### 1. Install Vagrant and VirtualBox
 
@@ -96,7 +96,7 @@ The packages and tools installed are the following:
 
 After this process ends, the enviroment is configured and ready to run the experiments. 
 
-## Repository structure
+## Repository Structure
 
 ```
 ├── assets/
@@ -138,7 +138,7 @@ After this process ends, the enviroment is configured and ready to run the exper
 - **`/README.md`**: README file with this project's documentation.
 
 
-## Replicating the experiments
+## Replicating the Experiments
 
 There are two set of experiments to replicate: the [data plane parameters evaluation](#data-plane-parameters-evaluation), and the [network-wide offloading algorithms evaluation](#network-wide-offloading-algorithms-evaluation). The first evaluates different data plane configurations to decide on the best one. The latter evaluates the network-wide offloading algorithms with two topologies, linear and tree, using different memory availability scenarios in the switches.
 
@@ -252,7 +252,7 @@ Open the `algorihtms_evaluation_plots.ipynb` in your browser. Before executing t
 
 With the folders updated, start the kernel and run all cells to generate the CSV table and plot the graphs. That`s it, the network-wide table entries offloading algorihtms evaluation is over. Analyze the results and compare with the ones in our paper.
 
-## Obtaining the baseline alerts
+## Obtaining the Baseline Alerts
 
 The baseline alerts used to compare against the experiments alerts were obtained through the following method:
 
