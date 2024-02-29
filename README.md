@@ -130,7 +130,7 @@ After this process ends, the enviroment is configured and ready to run the exper
 
 - **`utils/`**: Folder containing Python files that interact with Mininet and the P4Runtime;
 	- **`offload_table_entries.py`**: File responsbile for offloading the table entries to the swtiches according to the offloading algorithm;
-	- **`default.json`**: Python file responsible for creatin the Mininet enviroment and running an experiment;
+	- **`run_P4.py`**: Python file responsible for creating the Mininet enviroment and running an experiment;
 
 - **`.gitignore`**: Files for git to ignore;
 
@@ -155,7 +155,7 @@ The data plane parameters evaluations assesses three parameters:
 
 > The evaluation experiments with all combinations of the three parameteres (i.e., {N(10), T(10), W(256)}, {N(10), T(10), W(512)}, etc.).
 
-Before running the experiment, there is the need to do some adjustments in the code. First, uncomment the following line in the `utils/` file:
+Before running the experiment, there is the need to do some adjustments in the code. First, uncomment the following line in the `utils/offload_table_entries.py` file:
 
 ```
 print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
@@ -179,7 +179,7 @@ With these changes done, create an output folder in any location you like; for e
 mkdir ~/Documents/dataplane_parameters_evaluation
 ```
 
-Then,  enter the `dataplane_parameters_evaluation/` folder in the `testing/` directory, and run the following command in the terminal:
+Then, enter the `dataplane_parameters_evaluation/` folder in the `testing/` directory, and run the following commands in the terminal:
 ```
 cd Network-Wide-Rule-Orchestrator/testing/dataplane_parameters_evaluation
 ./evaluate_parameters ~/Documents/dataplane_parameters_evaluation
@@ -187,38 +187,38 @@ cd Network-Wide-Rule-Orchestrator/testing/dataplane_parameters_evaluation
 
 > Always provide the full path, rather than a relative path, for the output folder parameter.
 
-The complete parameters evaluation takes a LONG time. There are roughly 55 million packets being sent at a rate of 1000 packest/s (due to BMv2 limited perfromance), which traslate to 15 hours to evaluate each parameters. There are 105 combiantions, so...it takes a VERY LONG TIME. If you wish to reduce the number of parameters to evaluate, feel free to do so.
+The complete parameters evaluation takes a LONG time. There are roughly 55 million packets being sent at a rate of 1000 packest/s (due to BMv2 limited performance), which traslates to 15 hours to evaluate each parameter combination. There are 105 combinations, so it takes a VERY LONG TIME. If you wish to reduce the number of parameters to evaluate, feel free to do so.
 
-After finishing the experiments, it is time to plot them. For this, install Jupyter:"
+After finishing the experiments, it is time to plot them. For this, install Jupyter:
 ```
 pip install jupyterlab
 ```
 
-In the testing folder, run the command:
+With Jupyter installed, go to the `testing/` folder, and run the following command:
 ```
 jupyter lab --NotebookApp.iopub_data_rate_limit=1.0e10
 ```
 
-Open the `parameters_eval_plots.ipynb` in your browser. Before executing the notebook's cells, update the experiment's input folder and the output folder in the `Parse the parameters evaluation experiments` code.
+Open the `parameters_eval_plots.ipynb` in your browser. Before executing the notebook's cells, update the experiment's input folder and output folder in the `Parse the parameters evaluation experiments` code.
 > Change the output folder to avoid collisions with the graphs of this repository.
 
-With the folders updated, strat the kernl and run all cells to plot the graphs. That`s it, the dataplane parameters evaluation is over. ANalyze the results and compare with the ones in our paper.
+With the folders updated, strat the kernel and run all cells to plot the graphs. That`s it, the dataplane parameters evaluation is over. Analyze the results and compare it with the ones in the dissertation.
 
 
 ### Network-wide offloading algorithms evaluation
 
-The evaluation of the network-wide offloading algorithms assesses the three table entries offloading algorithm in two network topologies with 4 memory availability scenarios:
+The evaluation of the network-wide offloading algorithms assesses the three table entries offloading algorithms presented in my dissertation in two network topologies with 4 memory availability scenarios:
 
 - The table entries offloading algorithm are:
 	- Simple, First-Fit, Best-Fit.
 - The topologies evaluated include: 
-	- 5 switches linear and tree
+	- 5 switches linear and 5 switches tree.
  - Memory avialabiltiy scenarios for each switch in the network:
 	 - 100%,75%,50%,25%
  
-> The memory avialability refers to the amount of table entries a swtich can receive. For example, 100% means all switches in the network can receive all table entries, whereas 25% means the switches can receive only 25% of the table entries to offload.
+> The memory avialability refers to the amount of table entries a swtich can receive. For example, `100%` means all switches in the network can receive all table entries, whereas `25%` means the switches can receive only 25% of the table entries to offload.
 
-Before conducting the experiments, it is necessary to adjust some parts of the code. If you haven't run the "Data plane parameters evaluation" you can skip this step. Otherwise, go back to the [data plane parameters evaluation](#data-plane-parameters-evaluation), check the modifications done, and perform the opposite action in the code. This means that if the action was to comment, you need to uncomment the mentioned code and vice-versa.
+Before conducting the experiments, it is necessary to adjust some parts of the code. If you haven't run the `Data plane parameters evaluation` you can skip this step. Otherwise, go back to the [data plane parameters evaluation](#data-plane-parameters-evaluation), check the modifications done, and perform the opposite action in the code. This means that if the action was to comment, you need to uncomment the mentioned code and vice-versa.
 
 The dataplane parameters are set to: _N_ = 200, _T_ = 10, and _W_ = 16384, just like in the papers experiments.
 
@@ -243,7 +243,7 @@ The last step is to generate the CSV table with all results and plot the graphs.
 pip install jupyterlab
 ```
 
-Then, in the testing folder, run the command:
+Then, in the testing folder, run the following command:
 ```
 jupyter lab --NotebookApp.iopub_data_rate_limit=1.0e10
 ```
@@ -251,7 +251,7 @@ jupyter lab --NotebookApp.iopub_data_rate_limit=1.0e10
 Open the `algorithm_evaluation_plots.ipynb` in your browser. Before executing the notebook's cells, update the experiment's input folder and the output folder in the `Parse the parameters evaluation experiments` section.
 > Change the output folder to avoid collisions with the graphs of this repository.
 
-With the folders updated, start the kernel and run all cells to generate the CSV table and plot the graphs. That`s it, the network-wide table entries offloading algorithm evaluation is over. Analyze the results and compare with the ones in our paper.
+With the folders updated, start the kernel and run all cells to generate the CSV table and plot the graphs. That`s it, the network-wide table entries offloading algorithm evaluation is over. Analyze the results and compare with the ones in my dissertation.
 
 ## Obtaining the Baseline Alerts
 
