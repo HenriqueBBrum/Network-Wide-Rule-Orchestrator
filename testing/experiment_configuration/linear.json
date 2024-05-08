@@ -4,7 +4,7 @@
 
 	"network_info": "../src/topologies/linear/network_info.json",
 	"table_entries_file": "../src/p4_table_entries_random.config",
-	"offloading_algorithm": "simple",
+	"offloading_algorithm": "bestfit",
 
 	"devices":[
 		{
@@ -17,6 +17,6 @@
 		},
 		{
 			"name":"hsource",
-			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/Thursday-WorkingHours.pcap"]
+			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/Monday-WorkingHours.pcap"]
 		}]
 }

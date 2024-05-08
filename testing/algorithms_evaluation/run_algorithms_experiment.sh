@@ -66,10 +66,10 @@ sed -i -e 's|COUNTMIN_AGING_THRESHOLD^;]*|COUNTMIN_AGING_THRESHOLD='$countmin_ag
 sed -i -e 's|COUNTMIN_WIDTH=[^;]*|COUNTMIN_WIDTH='$countmin_width'|' $src_folder"/include/header.p4"
 
 # Create the snort log folders
-mkdir ../snort/logs
+mkdir $snort_folder"/logs"
 
 # Emulate with each PCAP in the CIC-IDS 2017 dataset
-for pcap in ../../../CICIDS2017-PCAPS/*; do
+for pcap in ../../../CICIDS2017-PCAPS/Monday-WorkingHours.pcap; do
 	mkdir $snort_folder"/logs/eth0"
 	mkdir $snort_folder"/logs/hsnort-eth1"
 	mkdir $snort_folder"/logs/hsnort-eth2"
@@ -82,18 +82,21 @@ for pcap in ../../../CICIDS2017-PCAPS/*; do
 	# Run the experiment
 	cd $src_folder
 	make clean
-	make TEST_JSON=$config_file > $output_folder"output.txt"
+	make TEST_JSON=$config_file #> $output_folder"output.txt"
 
 	# Save the results of the experiment
 	cd $parent_path
 	weekday=$(echo $pcap_name | sed "s|-.*||")
 	mkdir $output_folder/$weekday
 	mv $output_folder"output.txt" $output_folder/$weekday
-	
+
 	# Clean snort outputs
 	sudo chmod -R a+rwx "$snort_folder"/logs/*
 	cp -r "$snort_folder"/logs/* $output_folder/$weekday
 	rm -r "$snort_folder"/logs/*
+
+	echo "------------------------------------------- LOOP ---------------------------------"
+	exit -1
 done;
 
 cd $src_folder

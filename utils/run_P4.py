@@ -179,9 +179,9 @@ class ExerciseRunner:
         self.switches = topo['switches']
         self.links = self.parse_links(topo['links'])
 
-        # self.logger('Reading test file.')
-        # with open(test_file, 'r') as f:
-        #     self.test = json.load(f)
+        self.logger('Reading test file.')
+        with open(test_file, 'r') as f:
+            self.test = json.load(f)
 
         # Ensure all the needed directories exist and are directories
         for dir_name in [log_dir, pcap_dir]:
@@ -366,10 +366,10 @@ class ExerciseRunner:
             print('')
 
 
-        # offload(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries_file"], self.test["table_entries_distribution_alg"])
-        # print()
+        offload(self.test["p4info"], self.test["bmv2_json"], self.test["network_info"], self.test["table_entries_file"], self.test["offloading_algorithm"])
+        print()
 
-        CLI(self.net)
+        # CLI(self.net)
 
         # print('Starting test')
         # for device in self.test['devices']:
