@@ -35,10 +35,10 @@ def offload(p4info, bmv2_json, network_info_file, table_entries_file, offloading
     parsed_table_entries = [get_table_entry_fields(table_entry) for table_entry in table_entries]
     print(offloading_algorithm)
     switches_table_entries =  get_switches_table_entries(network_info, switches_info, hosts_info, parsed_table_entries, offloading_algorithm)
-    # for switch_id, table_entries in switches_table_entries.items():
-    #     print(switch_id, len(table_entries))
+    for switch_id, table_entries in switches_table_entries.items():
+        print(switch_id, len(table_entries))
 
-    print("\n------------------ Begin offloading -----------------------")
+    # print("\n------------------ Begin offloading -----------------------")
     # try:
     #     for switch_id, table_entries in switches_table_entries.items():
     #         print(switch_id, " Space: ", network_info["switches"][switch_id]["free_table_entries"], " Usage for NIDS table entries: ", len(table_entries))
@@ -131,11 +131,10 @@ def get_switches_table_entries(network_info, switches_info, hosts_info, parsed_t
             print("\n--------------- Table entries key: ", key, "| Table entries length: ", len(subset), "------------------\n")
             print(subset[0:3])
     print("\n------------------ Offloading algorithms start -----------------------")
-    # if (offloading_algorithm == "firstfit"):
-    #     switches_table_entries = firstfit(network_info, dag_topology, switches_info, hosts_info, table_entries_subsets)
-    # el
-    if (offloading_algorithm == "bestfit"):
-        switches_table_entries = bestfit(network_info, dag_topology, switches_info, hosts_info, table_entries_subsets)
+    if (offloading_algorithm == "firstfit"):
+        switches_table_entries = firstfit(network_info, dag_topology, switches_info, table_entries_subsets)
+    elif (offloading_algorithm == "bestfit"):
+        switches_table_entries = bestfit(network_info, dag_topology, switches_info, table_entries_subsets)
 
     return switches_table_entries
 
@@ -156,7 +155,6 @@ def create_dag_topology(network_info):
             dag_topology.add_edge(link[0], link[1])
 
     return dag_topology
-
 
 # Delegates the table entries to the switches according to the destination IP and the location of the hosts in the network
 # Switches are have ordered names: s1 is the source, s2 is the second, and so. There can be more than one swtich at any depth. but they are still alphabetically ordered
@@ -197,44 +195,58 @@ def get_table_entries_subsets(network_topology, switches_info, hosts_info, table
             print("Error in subset: ", e.args)
     return table_entries_subsets
 
-# Switches have the same space
-# def firstfit(network_info, dag_topology, switches_info, hosts_info, table_entries_subsets):
-#     switches_table_entries = {switch: [] for switch in switches_info.keys()}
-#     ordered_switches = sorted(network_info["switches"].items(), key=lambda sw: sw[1]["hops_from_source"])
-#     offloaded_subsets_runtime_info = {}
-#     for sw, info in ordered_switches:
-#         print(sw, info)
-#         switches_table_entries[sw] = entries_to_offload(sw, dag_topology, table_entries_subsets, offloaded_subsets_runtime_info)
-#         subsets_for_sw = []
-#         for subset in offloaded_subsets_runtime_info:
-#
-#
-#
-#
-#     return switches_table_entries
 
+### FirstFit code ###
 
-def bestfit(network_info, dag_topology, switches_info, hosts_info, table_entries_subsets):
+def firstfit(network_info, dag_topology, switches_info, table_entries_subsets):
     switches_table_entries = {switch: [] for switch in switches_info.keys()}
     ordered_switches = sorted(network_info["switches"].items(), key=lambda sw: sw[1]["hops_from_source"])
-    ordered_subsets = order_subsets(network_info, table_entries_subsets)
+    offloaded_subsets_runtime_info = {}
+    # for sw, info in ordered_switches:
+    #     print(sw, info)
+    #     switches_table_entries[sw] = entries_to_offload(sw, dag_topology, table_entries_subsets, offloaded_subsets_runtime_info)
+    #     subsets_for_sw = []
+    #     for subset in offloaded_subsets_runtime_info:
 
-    for subset_id in ordered_subsets:
-        print(subset_id)
-        related_switches = get_subset_path(dag_topology, subset_id)
-        # amt_offloaded = 0
-        # entries_to_offload = subset
-        # for switch in related_switches:
-        #     amt_offloaded_in_current_switch = offload(switch, entries_to_offload)
-        #     amt_offloaded+=amt_offloaded_in_current_switch
-        #     if amt_offloaded >= len(subset):
-        #         break
-        #
-        #     entries_to_offload-=amt_offloaded_in_current_switch
+
 
 
     return switches_table_entries
 
+### BestFit code ###
+def bestfit(network_info, dag_topology, switches_info, table_entries_subsets):
+    switches_table_entries = {switch: [] for switch in switches_info.keys()}
+    ordered_switches = sorted(network_info["switches"].items(), key=lambda sw: sw[1]["hops_from_source"])
+    ordered_subsets = order_subsets(network_info, table_entries_subsets)
+    for subset_id in ordered_subsets:
+        paths = get_subset_paths(dag_topology, switches_info, subset_id)
+        already_offloaded = {}
+        for path in paths:
+            amt_to_offload, amt_offloaded = 0, 0
+            for switch in path:
+                if(switch == "start"):
+                    continue
+
+                if switch in already_offloaded:
+                    amt_offloaded+=already_offloaded[switch]
+                    continue
+
+                max_space_sw = network_info["switches"][switch]["free_table_entries"]
+                if len(switches_table_entries[switch]) >= max_space_sw:
+                    continue
+
+                available_space = max_space_sw - len(switches_table_entries[switch])
+                amt_offloaded+=amt_to_offload
+                if amt_offloaded >= len(table_entries_subsets[subset_id]):
+                    break
+
+                amt_to_offload = (len(table_entries_subsets[subset_id]) -  amt_offloaded) if amt_offloaded + available_space > len(table_entries_subsets[subset_id]) else available_space
+                upper_bound = amt_offloaded + amt_to_offload
+                switches_table_entries[switch].extend(table_entries_subsets[subset_id][amt_offloaded:upper_bound])
+                already_offloaded[switch] = amt_to_offload
+    return switches_table_entries
+
+## Ordering for subsets containing multiple switches not complete
 def order_subsets(network_info, table_entries_subsets):
     ordered_subsets = [None]*len(table_entries_subsets)
     composite_subsets = []
@@ -253,22 +265,24 @@ def order_subsets(network_info, table_entries_subsets):
 
     return ordered_subsets
 
-def get_subset_path(dag_topology, subset_id):
+def get_subset_paths(dag_topology, switches_info, subset_id):
+    paths = []
     if subset_id == "generic":
-        sorted_dag = list(nx.topological_sort(dag_topology))
-        return [node for node in sorted_dag if node != "start" if "h" not in node]
+        for switch in switches_info.keys():
+            paths.extend(list(nx.all_simple_paths(dag_topology, source="start", target=switch)))
     elif "+" in subset_id:
-        path = []
         subset_id_split = subset_id.split("+")
-        path.append(subset_id_split[0])
-        path.extend(subset_id_split[1].split("-"))
-        if path[0] == path[1]:
-            path = path[1:]
-        return path
+        lca_switch = subset_id_split[0]
+        related_switches = subset_id_split[1].split("-")
+        for related_switch in related_switches:
+            paths.extend(list(nx.all_simple_paths(dag_topology, source="s1", target=related_switch))) # lca_switch instead of s1?
+    else:
+        paths = list(nx.all_simple_paths(dag_topology, source="start", target=subset_id))
+        for path in paths:
+            path.reverse()
+    return paths
 
-    path  = list(nx.all_simple_paths(dag_topology, source="s1", target=subset_id))
 
-    return path if len(path) == 0 else path[0]
 
 
 # Iterates over the table entries and writes them to the corresponding switch
