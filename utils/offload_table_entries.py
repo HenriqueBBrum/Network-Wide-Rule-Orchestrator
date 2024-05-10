@@ -202,16 +202,44 @@ def firstfit(network_info, dag_topology, switches_info, table_entries_subsets):
     switches_table_entries = {switch: [] for switch in switches_info.keys()}
     ordered_switches = sorted(network_info["switches"].items(), key=lambda sw: sw[1]["hops_from_source"])
     offloaded_subsets_runtime_info = {}
-    # for sw, info in ordered_switches:
-    #     print(sw, info)
-    #     switches_table_entries[sw] = entries_to_offload(sw, dag_topology, table_entries_subsets, offloaded_subsets_runtime_info)
-    #     subsets_for_sw = []
-    #     for subset in offloaded_subsets_runtime_info:
+    for switch, info in ordered_switches:
+        max_space_sw = network_info["switches"][switch]["free_table_entries"]
+        if len(switches_table_entries[sw]) >= max_space_sw:
+            continue
+
+        subsets_to_offload = []
+        for subset in table_entries_subsets:
+            paths = get_subset_paths()
+            for path in paths:
+                if switch in path:
+                    subsets_to_offload.append(subset)
 
 
+        ordered_subsets = firstfit_order_subsets()
 
+        entries_to_offload = []
+        for subset_id, table_entries in ordered_subsets:
+            available_space = max_space_sw - len(switches_table_entries[switch])
+            amt_offloaded = offloaded_subsets_runtime_info
+            amt_to_offload = (len(table_entries) -  amt_offloaded) if amt_offloaded + available_space > len(table_entries) else available_space
+            upper_bound = amt_offloaded + amt_to_offload
+            switches_table_entries[switch].extend(table_entries[subset_id][amt_offloaded:upper_bound])
+            offloaded_subsets_runtime_info =
 
     return switches_table_entries
+
+
+def firstfit_order_subsets():
+    ordered_subsets = []
+    for subset in subsets_to_offload:
+        if subset_id == "generic":
+            order_subsets[0] = subset
+        elif "+" in subset_id and switch in subset_id:
+        elif subset_id == switch:
+        else:
+            order_subsets.append(subset)
+    return order_subsets
+
 
 ### BestFit code ###
 def bestfit(network_info, dag_topology, switches_info, table_entries_subsets):
