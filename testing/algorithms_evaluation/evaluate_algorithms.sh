@@ -30,9 +30,9 @@ amt_of_table_entries=$(wc -l < $table_entries_file)
 table_entries_file="../src/p4_table_entries_random.config"
 
 # Run an experiment in each one of the following scenarios:
-for topology in "linear"; do
-	for offloading_algorithm in "bestfit"; do
-		for available_space in 100; do
+for topology in {"linear, tree"}; do
+	for offloading_algorithm in {"simple","firstfit","bestfit"; do
+		for available_space in {25,50,75,100}; do
 			a=$((available_space*amt_of_table_entries))
 			space_per_sw=$(echo $(( a%100? a/100+1:a/100 )))
 

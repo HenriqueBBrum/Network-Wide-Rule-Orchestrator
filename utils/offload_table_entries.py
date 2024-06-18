@@ -33,33 +33,32 @@ def offload(p4info, bmv2_json, network_info_file, table_entries_file, offloading
 
     switches_info, hosts_info = get_network_info(network_info)
     parsed_table_entries = [get_table_entry_fields(table_entry) for table_entry in table_entries]
-    print(offloading_algorithm)
     switches_table_entries =  get_switches_table_entries(network_info, switches_info, hosts_info, parsed_table_entries, offloading_algorithm)
     for switch_id, table_entries in switches_table_entries.items():
         print(switch_id, len(table_entries))
 
-    # print("\n------------------ Begin offloading -----------------------")
-    # try:
-    #     for switch_id, table_entries in switches_table_entries.items():
-    #         print(switch_id, " Space: ", network_info["switches"][switch_id]["free_table_entries"], " Usage for NIDS table entries: ", len(table_entries))
-    #         num_id = int(switch_id.split('s')[1])
-    #         switch = p4runtime_lib.bmv2.Bmv2SwitchConnection(
-    #             name=switch_id, address='127.0.0.1:5005'+str(num_id),
-    #             device_id=num_id-1, proto_dump_file='logs/'+switch_id+'-p4runtime-requests_ids.txt')
-    #
-    #         # Send master arbitration update message to establish this controller as master
-    #         switch.MasterArbitrationUpdate()
-    #         # print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
-    #         # switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
-    #         # Writes for each switch its table_entries
-    #         switches[switch_id] = switch
-    #         write_table_entries(p4info_helper, switch, table_entries)
-    #         read_table_table_entries(p4info_helper, switch)
-    #         print()
-    # except KeyboardInterrupt:
-    #     print("Shutting down.")
-    # except grpc.RpcError as e:
-    #     printGrpcError(e)
+    print("\n------------------ Begin offloading -----------------------")
+    try:
+        for switch_id, table_entries in switches_table_entries.items():
+            print(switch_id, " Space: ", network_info["switches"][switch_id]["free_table_entries"], " Usage for NIDS table entries: ", len(table_entries))
+            num_id = int(switch_id.split('s')[1])
+            switch = p4runtime_lib.bmv2.Bmv2SwitchConnection(
+                name=switch_id, address='127.0.0.1:5005'+str(num_id),
+                device_id=num_id-1, proto_dump_file='logs/'+switch_id+'-p4runtime-requests_ids.txt')
+
+            # Send master arbitration update message to establish this controller as master
+            switch.MasterArbitrationUpdate()
+            # print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
+            # switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
+            # Writes for each switch its table_entries
+            switches[switch_id] = switch
+            write_table_entries(p4info_helper, switch, table_entries)
+            read_table_table_entries(p4info_helper, switch)
+            print()
+    except KeyboardInterrupt:
+        print("Shutting down.")
+    except grpc.RpcError as e:
+        printGrpcError(e)
 
 # Returns the information regarding what hosts are connected to what switches
 def get_network_info(network_info):
@@ -213,18 +212,15 @@ def firstfit(network_info, digraph_topology, switches_info, table_entries_subset
             for path in paths:
                 if switch in path and subset_id not in subsets_to_offload:
                     subsets_to_offload.add(subset_id)
-        print(switch)
+
         ordered_subsets = firstfit_order_subsets(switch, subsets_to_offload)
-        print(ordered_subsets)
         source_to_sw_path = nx.shortest_path(digraph_topology, source="s1", target=switch)
         source_to_sw_path.remove(switch)
         str_source_to_sw_path = "".join(source_to_sw_path)
         new_path = str_source_to_sw_path + switch
+
         offloaded_subsets_runtime_info[new_path] = {}
-        print(str_source_to_sw_path, new_path)
-        print(offloaded_subsets_runtime_info)
         for subset_id in ordered_subsets:
-            table_entries = table_entries_subsets[subset_id]
             available_space = max_space_sw - len(switches_table_entries[switch])
             if available_space == 0:
                 break
@@ -233,16 +229,14 @@ def firstfit(network_info, digraph_topology, switches_info, table_entries_subset
                 amt_offloaded = offloaded_subsets_runtime_info[str_source_to_sw_path][subset_id]
             else:
                 amt_offloaded = 0
-            if amt_offloaded == len(table_entries):
+            if amt_offloaded == len(table_entries_subsets[subset_id]):
                 offloaded_subsets_runtime_info[new_path][subset_id] = amt_offloaded
                 continue
 
-            amt_to_offload = (len(table_entries) -  amt_offloaded) if amt_offloaded + available_space > len(table_entries) else available_space
+            amt_to_offload = (len(table_entries_subsets[subset_id]) -  amt_offloaded) if amt_offloaded + available_space > len(table_entries_subsets[subset_id]) else available_space
             upper_bound = amt_offloaded + amt_to_offload
-            print(switch, subset_id, amt_offloaded, amt_to_offload, upper_bound)
-            switches_table_entries[switch].extend(table_entries[amt_offloaded:upper_bound])
+            switches_table_entries[switch].extend(table_entries_subsets[subset_id][amt_offloaded:upper_bound])
             offloaded_subsets_runtime_info[new_path][subset_id] = upper_bound
-
     return switches_table_entries
 
 
