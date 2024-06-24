@@ -53,7 +53,7 @@ def offload(p4info, bmv2_json, network_info_file, table_entries_file, offloading
             # Writes for each switch its table_entries
             switches[switch_id] = switch
             write_table_entries(p4info_helper, switch, table_entries)
-            read_table_table_entries(p4info_helper, switch)
+            read_table_entries(p4info_helper, switch)
             print()
     except KeyboardInterrupt:
         print("Shutting down.")
