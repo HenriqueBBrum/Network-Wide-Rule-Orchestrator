@@ -44,7 +44,7 @@ def offload(p4info, bmv2_json, network_info_file, table_entries_file, offloading
             num_id = int(switch_id.split('s')[1])
             switch = p4runtime_lib.bmv2.Bmv2SwitchConnection(
                 name=switch_id, address='127.0.0.1:5005'+str(num_id),
-                device_id=num_id-1, proto_dump_file='logs/'+switch_id+'-p4runtime-requests_ids.txt')
+                device_id=num_id-1, proto_dump_file='logs/'+switch_id+'-p4runtime-requests_nids.txt')
 
             # Send master arbitration update message to establish this controller as master
             switch.MasterArbitrationUpdate()
@@ -337,18 +337,18 @@ def get_subset_paths(digraph_topology, switches_info, subset_id, reverse=True):
 # Iterates over the table entries and writes them to the corresponding switch
 def write_table_entries(p4info_helper, switch, table_entries):
     for table_entry in table_entries:
-        if table_entry["table_name"] == "ipv4_ids":
+        if table_entry["table_name"] == "ipv4_nids":
             # Remove "don't care entries" (e.g. 0.0.0.0 IP or 0-65535 port range) because P4Runtime does not accept them
             match_fields = build_match_fields(table_entry)
             table_entry = p4info_helper.buildTableEntry(
-                table_name="MyIngress.ipv4_ids",
+                table_name="MyIngress.ipv4_nids",
                 priority=int(table_entry["priority"]),
                 match_fields=match_fields,
                 action_name="MyIngress."+table_entry["action"])
         else:
             match_fields = build_match_fields(table_entry, 6)
             table_entry = p4info_helper.buildTableEntry(
-                table_name="MyIngress.ipv6_ids",
+                table_name="MyIngress.ipv6_nids",
                 priority=int(table_entry["priority"]),
                 match_fields=match_fields,
                 action_name="MyIngress."+table_entry["action"])
@@ -416,7 +416,7 @@ def read_counters(p4info):
 def read_direct_counters(p4info, table_name):
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
     for switch_id, switch in switches.items():
-        print('\n----- Reading ipv4_ids table counters for %s -----' % switch.name)
+        print('\n----- Reading ipv4_nids table counters for %s -----' % switch.name)
         for response in switch.ReadDirectCounters(table_id = p4info_helper.get_tables_id(table_name)):
             print("Number of entries in direct counters ", len(response.entities))
             for entity in response.entities:
