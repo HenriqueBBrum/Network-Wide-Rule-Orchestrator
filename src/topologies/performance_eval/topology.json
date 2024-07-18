@@ -1,0 +1,14 @@
+{
+    "hosts": {
+        "hsource": {"ip": "10.0.1.10/24", "mac": "08:00:00:00:00:01"},
+        "hdest": {"ip": "10.0.1.30/24", "mac": "08:00:00:00:00:03"}
+    },
+    "switches": {
+        "s1": {"cli_input": "topologies/mirror_cmds.txt"},
+        "s2": {"cli_input": "topologies/mirror_cmds.txt"},
+        "s3": {"cli_input": "topologies/mirror_cmds.txt"}
+    },
+    "links": [
+        ["hsource", "s1-p1"],["s1-p2", "s2-p2"],["s1-p3", "s3-p2"],["hdest", "s2-p1"]
+    ]
+}

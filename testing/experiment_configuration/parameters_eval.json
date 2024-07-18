@@ -9,10 +9,10 @@
 	"devices":[
 		{
 			"name":"hsnort",
-			"cmds":["snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort3-registered -A alert_json --lua \"alert_json = {file = true}\" -l ../snort/logs/eth0 -i eth0 &> ../snort/logs/eth0/output.txt &"]
+			"cmds":["snort -c ../snort/configuration/snort.lua --rule-path ../snort/rules/snort3-registered -A alert_json -l ../snort/logs/eth0 -i eth0 &>> ../snort/logs/eth0/output.txt &"]
 		},
 		{
 			"name":"hsource",
-			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/Monday-WorkingHours.pcap"]
+			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 /home/ubuntu/NFSDatasets/CICIDS2017/Friday-WorkingHours.pcap"]
 		}]
 }

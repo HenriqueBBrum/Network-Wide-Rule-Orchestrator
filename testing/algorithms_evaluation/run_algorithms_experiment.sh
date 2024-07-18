@@ -82,13 +82,13 @@ for pcap in ../../../CICIDS2017-PCAPS/Monday-WorkingHours.pcap; do
 	# Run the experiment
 	cd $src_folder
 	make clean
-	make TEST_JSON=$config_file #> $output_folder"output.txt"
+	make TEST_JSON=$config_file #> $output_folder"stdout_output.txt"
 
 	# Save the results of the experiment
 	cd $parent_path
 	weekday=$(echo $pcap_name | sed "s|-.*||")
 	mkdir $output_folder/$weekday
-	mv $output_folder"output.txt" $output_folder/$weekday
+	mv $output_folder"stdout_output.txt" $output_folder/$weekday
 
 	# Clean snort outputs
 	sudo chmod -R a+rwx "$snort_folder"/logs/*
@@ -102,4 +102,4 @@ done;
 cd $src_folder
 make clean
 
-stty erase ^H
+stty erase ^?

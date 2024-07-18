@@ -258,29 +258,10 @@ With the folders updated, start the kernel and run all cells to generate the CSV
 The baseline alerts used to compare against the experiments alerts were obtained through the following method:
 
 ```
-snort -c snort.lua --rule-path <rule-path> -R <pcap-file-location> -A alert_json --lua "alert_json = {file = true}"
+snort -c <config-path> --rule-path <rule-path> -r <pcap-file-location> -A alert_json --lua "alert_json = {file = true}"
 ```
 
 This command runs Snort 3 using the ruleset located in `<rule-path>` and analyzes the network traffic of the PCAP file located at `<pcap-file-location>`. The rulesets used for testing are stored in the `snort/rules` folder. The output alerts file, containing all generated alerts, is saved in the same location where the command is executed.
 
-
-<!---## Understading the code 
-
-This last section explains how every piece of code is interlinked and how they work. The purpose of this explanation is to faciliatet the inclusion of new alogirhtms, topologies, and whatever comes to mind to thsi code for further experimentation.
-
-1. The `testing...` file runs the desired evaluation. It can be the ... file for the ... evaluation or the ... script for the .. evlaution. Both ot fthem present a similar code. Thye check the need parameters and run all the combinations of the experiments. For each combination they run another script.
-2. The .. script run inside the .. sfiles, are the main executing script of the program. They, change the configuration of each experiment, build the MIninet topology with P4 siwtches, and save the ouput files to the desired folders.
-	- The .. scrip changes this and taht
- 	- The .. fiel modifies this and that
-3. The config file ,odified by both ... does ...
-4. They also modifiey the p4 files to ....
-5. The last file modified, but only hy the .. is the `networ_info` file of a tpology. IN this file, the ...
-6. After changing all configuartion values the run scripts, iterate over all pcap file for testing. In this case the CICIDS2017 pCpa. Create the snort log folder for the switches, updates the input pcap file in the config file, creates the Mininer ntwork and starts the experiments.
-7. The make ... command creates the tpology and runs the experiments.
-	1. FIrst, it build the minnet topology and the swtiches. The switches working is detailed in the min.p4 file
- 	2. THen, it starts the testing process at the `run` file lines... In these testing process it also determins the table to offload according to the `..`file. In this file the offloading algorithm are detailed.
-8. With the swithces built, the table entries offloaded. The command in the config file are executed. The last command is the tcpreplay command to send the desiderd nettwro trafic.
-9. When all packets of PCAP are sent, the data plane information is read and saved to a file. MIninet is closed, and the important data is copyed to the desired output folder.
-10. Processe 6 to 9 are executed for every pcap while process 3 to 9 is done for every evaluationc ombination.-->
 
 

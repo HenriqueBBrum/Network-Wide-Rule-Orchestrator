@@ -217,7 +217,7 @@ binder =
 
 -- use these to capture perf data for analysis and tuning
 --profiler = { }
---perf_monitor = { }
+perf_monitor = { }
 
 ---------------------------------------------------------------------------
 -- 5. configure detection
@@ -301,16 +301,19 @@ rate_filter =
 --alert_sfsocket = { }
 --alert_syslog = { }
 --unified2 = { }
+alert_json = { file = true }
 
 -- packet logging
 -- you can enable with defaults from the command line with -L <log_type>
---log_codecs = { }
---log_hext = { }
+--log_codecs = { file = true }
+--log_hext = { file = true }
 --log_pcap = { }
 
 -- additional logs
---packet_capture = { }
+--packet_capture = {enable = true}
 --file_log = { }
+
+
 
 ---------------------------------------------------------------------------
 -- 8. configure tweaks

@@ -19,6 +19,10 @@
 # We encourage you to dissect this script to better understand the BMv2/Mininet
 # environment used by the P4 tutorial.
 #
+
+import sys
+sys.path.insert(0, '/usr/local/lib/python3.9/site-packages/')
+
 import argparse
 import json
 import os
@@ -308,7 +312,7 @@ class ExerciseRunner:
     def program_switches(self):
         """ This method will program each switch using the BMv2 CLI and/or
             P4Runtime, depending if any command or runtime JSON files were
-            provided for the switches.
+            provided for the switches.1303361
         """
         for sw_name, sw_dict in self.switches.items():
             if 'cli_input' in sw_dict:
@@ -371,19 +375,19 @@ class ExerciseRunner:
 
         # CLI(self.net)
 
-        # print('Starting test')
-        # for device in self.test['devices']:
-        #     dev_instance = self.net.get(device.get('name'))
-        #     print(device.get('name'))
-        #     for cmd in device['cmds']:
-        #         print(cmd)
-        #         dev_instance.cmd(cmd)
+        print('Starting test')
+        for device in self.test['devices']:
+            dev_instance = self.net.get(device.get('name'))
+            print(device.get('name'))
+            for cmd in device['cmds']:
+                print(cmd)
+                dev_instance.cmd(cmd)
 
-        #     sleep(1)
+            sleep(1)
 
         print('Ending test')
         read_counters(self.test["p4info"])
-        read_direct_counters(self.test["p4info"], "ipv4_nids")
+        # read_direct_counters(self.test["p4info"], "ipv4_nids")
         shutdown_switches()
 
 

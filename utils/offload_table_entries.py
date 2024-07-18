@@ -32,7 +32,7 @@ def offload(p4info, bmv2_json, network_info_file, table_entries_file, offloading
         table_entries = f.read().splitlines()
 
     switches_info, hosts_info = get_network_info(network_info)
-    parsed_table_entries = [get_table_entry_fields(table_entry) for table_entry in table_entries]
+    parsed_table_entries = [get_table_entry_fields(table_entry) for table_entry in table_entries] # [0:10]
     switches_table_entries =  get_switches_table_entries(network_info, switches_info, hosts_info, parsed_table_entries, offloading_algorithm)
     for switch_id, table_entries in switches_table_entries.items():
         print(switch_id, len(table_entries))
@@ -48,12 +48,12 @@ def offload(p4info, bmv2_json, network_info_file, table_entries_file, offloading
 
             # Send master arbitration update message to establish this controller as master
             switch.MasterArbitrationUpdate()
-            # print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
-            # switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
+            print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
+            switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
             # Writes for each switch its table_entries
             switches[switch_id] = switch
-            write_table_entries(p4info_helper, switch, table_entries)
-            read_table_entries(p4info_helper, switch)
+            # write_table_entries(p4info_helper, switch, table_entries)
+            # read_table_entries(p4info_helper, switch)
             print()
     except KeyboardInterrupt:
         print("Shutting down.")
@@ -264,7 +264,6 @@ def firstfit_order_subsets(switch, subsets_to_offload):
 ### BestFit code ###
 def bestfit(network_info, digraph_topology, switches_info, table_entries_subsets):
     switches_table_entries = {switch: [] for switch in switches_info.keys()}
-    ordered_switches = sorted(network_info["switches"].items(), key=lambda sw: sw[1]["hops_from_source"])
     ordered_subsets = order_subsets(network_info, table_entries_subsets)
     for subset_id in ordered_subsets:
         paths = get_subset_paths(digraph_topology, switches_info, subset_id)
@@ -401,6 +400,7 @@ def read_table_entries(p4info_helper, switch):
 # Reads the counters of a P4 program
 def read_counters(p4info):
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info)
+    print(p4info_helper)
     for switch_id, switch in switches.items():
         print('\n----- Reading counters for %s -----' % switch.name)
         for response in switch.ReadCounters():
