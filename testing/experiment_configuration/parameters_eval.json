@@ -13,6 +13,6 @@
 		},
 		{
 			"name":"hsource",
-			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 /home/ubuntu/NFSDatasets/CICIDS2017/Friday-WorkingHours.pcap"]
+			"cmds":["tcpreplay-edit --mtu-trunc -p 15000 -i eth0 /home/ubuntu/NFSDatasets/CICIDS2017/Friday-WorkingHours.pcap"]
 		}]
 }

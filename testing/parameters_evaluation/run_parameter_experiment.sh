@@ -68,7 +68,7 @@ sed -i -e 's|COUNTMIN_WIDTH=[^;]*|COUNTMIN_WIDTH='$countmin_width'|' $src_folder
 mkdir $snort_folder"logs"
 
 # Emulate with each PCAP in the CICIDS2017 dataset
-for pcap in /home/ubuntu/NFSDatasets/CICIDS2017/Friday*; do
+for pcap in /home/ubuntu/NFSDatasets/CICIDS2017/*; do
 	mkdir $snort_folder"logs/eth0"
 
 	pcap_name=$(echo $pcap | sed "s/.*\///")
