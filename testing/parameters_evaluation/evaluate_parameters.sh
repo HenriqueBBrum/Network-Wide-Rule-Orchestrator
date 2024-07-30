@@ -37,7 +37,7 @@ fi
 # done;
 
 
-for round in {2..5}; do 
+for round in 1; do 
 	results_folder=${output_folder}Experiment
 	mkdir $results_folder
 	./run_parameter_experiment.sh $results_folder $ruleset_folder $round 

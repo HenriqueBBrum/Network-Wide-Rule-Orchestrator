@@ -32,7 +32,7 @@ def offload(p4info, bmv2_json, network_info_file, table_entries_file, offloading
         table_entries = f.read().splitlines()
 
     switches_info, hosts_info = get_network_info(network_info)
-    parsed_table_entries = [get_table_entry_fields(table_entry) for table_entry in table_entries] # [0:10]
+    parsed_table_entries = [get_table_entry_fields(table_entry) for table_entry in table_entries]
     switches_table_entries =  get_switches_table_entries(network_info, switches_info, hosts_info, parsed_table_entries, offloading_algorithm)
     for switch_id, table_entries in switches_table_entries.items():
         print(switch_id, len(table_entries))
@@ -91,7 +91,6 @@ def get_network_info(network_info):
 def get_table_entry_fields(table_entry):
     table_entry_fields = {}
     table_entry_items = table_entry.split(" ")
-
     table_entry_fields["table_name"] = table_entry_items[1]
     table_entry_fields["action"] = table_entry_items[2]
     table_entry_fields["protocol"] = table_entry_items[3]
@@ -108,7 +107,7 @@ def get_table_entry_fields(table_entry):
     table_entry_fields["dstPortLower"] = table_entry_items[7].split("->")[0]
     table_entry_fields["dstPortUpper"] = table_entry_items[7].split("->")[1]
 
-    table_entry_fields["flags"] = table_entry_items[8]
+    # table_entry_fields["flags"] = table_entry_items[8]
 
     table_entry_fields["priority"] = table_entry_items[10]
 
@@ -369,7 +368,7 @@ def build_match_fields(table_entry_fields, ip_version=4):
     if table_entry_fields["dstPortLower"] != "0" or table_entry_fields["dstPortUpper"] != "65535":
        match_fields["meta.dstPort"] = (int(table_entry_fields["dstPortLower"]), int(table_entry_fields["dstPortUpper"]))
 
-    match_fields["meta.flags"] = int(table_entry_fields["flags"], 2)
+    # match_fields["meta.flags"] = int(table_entry_fields["flags"], 2)
 
     return match_fields
 
