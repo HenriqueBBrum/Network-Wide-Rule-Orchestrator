@@ -4,7 +4,7 @@
 
 	"network_info": "../src/topologies/tree/network_info.json",
 	"table_entries_file": "../src/p4_table_entries_random.config",
-	"offloading_algorithm": "firstfit",
+	"offloading_algorithm": "bestfit",
 
 	"devices":[
 		{
@@ -17,6 +17,6 @@
 		},
 		{
 			"name":"hsource",
-			"cmds":["tcpreplay-edit --mtu-trunc -i eth0 -p1000 ../../CICIDS2017-PCAPS/*"]
+			"cmds":["tcpreplay-edit --mtu-trunc -p 15000 -i eth0 /home/ubuntu/NFSDatasets/CICIDS2017/Wednesday-WorkingHours.pcap"]
 		}]
 }

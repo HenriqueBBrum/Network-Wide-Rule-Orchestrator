@@ -23,27 +23,27 @@
     },
     "switches": {
         "s1": {
-            "free_table_entries" : 367,
+            "free_table_entries" : 1464,
             "hops_from_source" : 0,
             "hops_from_endhost" : 0
         },
         "s2": {
-            "free_table_entries" : 367,
+            "free_table_entries" : 1464,
             "hops_from_source" : 1,
             "hops_from_endhost" : 0
         },
         "s3": {
-            "free_table_entries" : 367,
+            "free_table_entries" : 1464,
             "hops_from_source" : 1,
             "hops_from_endhost" : 0
         },
         "s4": {
-            "free_table_entries" : 367,
+            "free_table_entries" : 1464,
             "hops_from_source" : 2,
             "hops_from_endhost" : 0
         },
         "s5": {
-            "free_table_entries" : 367,
+            "free_table_entries" : 1464,
             "hops_from_source" : 2,
             "hops_from_endhost" : 0
         }

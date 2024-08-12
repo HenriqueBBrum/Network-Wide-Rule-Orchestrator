@@ -16,7 +16,6 @@ parser MyParser(packet_in packet,
 
         transition select(hdr.ethernet.etherType){
             TYPE_IPV4: parse_ipv4;
-            TYPE_IPV6: parse_ipv6;
             default:   accept;
         }
     }
@@ -25,17 +24,6 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.ip.v4);
         meta.protocol = (bit<16>)hdr.ip.v4.protocol;
         transition select(hdr.ip.v4.protocol){
-            TYPE_ICMP: parse_icmp;
-            TYPE_TCP:  parse_tcp;
-            TYPE_UDP:  parse_udp;
-            default:   accept;
-        }
-    }
-
-    state parse_ipv6 {
-        packet.extract(hdr.ip.v6);
-        meta.protocol = (bit<16>)hdr.ip.v6.nextHeader;
-        transition select(hdr.ip.v6.nextHeader){
             TYPE_ICMP: parse_icmp;
             TYPE_TCP:  parse_tcp;
             TYPE_UDP:  parse_udp;

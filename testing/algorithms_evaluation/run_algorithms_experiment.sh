@@ -69,7 +69,7 @@ sed -i -e 's|COUNTMIN_WIDTH=[^;]*|COUNTMIN_WIDTH='$countmin_width'|' $src_folder
 mkdir $snort_folder"/logs"
 
 # Emulate with each PCAP in the CIC-IDS 2017 dataset
-for pcap in ../../../CICIDS2017-PCAPS/Monday-WorkingHours.pcap; do
+for pcap in /home/ubuntu/NFSDatasets/CICIDS2017/Friday*; do
 	mkdir $snort_folder"/logs/eth0"
 	mkdir $snort_folder"/logs/hsnort-eth1"
 	mkdir $snort_folder"/logs/hsnort-eth2"
@@ -77,12 +77,12 @@ for pcap in ../../../CICIDS2017-PCAPS/Monday-WorkingHours.pcap; do
 	mkdir $snort_folder"/logs/hsnort-eth4"
 
 	pcap_name=$(echo $pcap | sed "s/.*\///")
-	sed -i -e 's|CICIDS2017-PCAPS\/[^"]*|CICIDS2017-PCAPS/'$pcap_name'|' $config_file
+	sed -i -e 's|CICIDS2017\/[^"]*|CICIDS2017/'$pcap_name'|' $config_file
 
 	# Run the experiment
 	cd $src_folder
 	make clean
-	make TEST_JSON=$config_file #> $output_folder"stdout_output.txt"
+	make TEST_JSON=$config_file &> $output_folder"/stdout_output.txt"
 
 	# Save the results of the experiment
 	cd $parent_path
@@ -96,7 +96,6 @@ for pcap in ../../../CICIDS2017-PCAPS/Monday-WorkingHours.pcap; do
 	rm -r "$snort_folder"/logs/*
 
 	echo "------------------------------------------- LOOP ---------------------------------"
-	exit -1
 done;
 
 cd $src_folder

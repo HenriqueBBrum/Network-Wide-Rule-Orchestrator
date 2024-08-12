@@ -48,8 +48,8 @@ def offload(p4info, bmv2_json, network_info_file, table_entries_file, offloading
 
             # Send master arbitration update message to establish this controller as master
             switch.MasterArbitrationUpdate()
-            print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
-            switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
+            # print("Installed P4 Program using SetForwardingPipelineConfig on switch "+switch_id)
+            # switch.SetForwardingPipelineConfig(p4info=p4info_helper.p4info, bmv2_json_file_path=bmv2_json)
             # Writes for each switch its table_entries
             switches[switch_id] = switch
             write_table_entries(p4info_helper, switch, table_entries)
@@ -107,7 +107,7 @@ def get_table_entry_fields(table_entry):
     table_entry_fields["dstPortLower"] = table_entry_items[7].split("->")[0]
     table_entry_fields["dstPortUpper"] = table_entry_items[7].split("->")[1]
 
-    # table_entry_fields["flags"] = table_entry_items[8]
+    table_entry_fields["flags"] = table_entry_items[8]
 
     table_entry_fields["priority"] = table_entry_items[10]
 
@@ -335,22 +335,18 @@ def get_subset_paths(digraph_topology, switches_info, subset_id, reverse=True):
 # Iterates over the table entries and writes them to the corresponding switch
 def write_table_entries(p4info_helper, switch, table_entries):
     for table_entry in table_entries:
-        if table_entry["table_name"] == "ipv4_nids":
-            # Remove "don't care entries" (e.g. 0.0.0.0 IP or 0-65535 port range) because P4Runtime does not accept them
-            match_fields = build_match_fields(table_entry)
-            table_entry = p4info_helper.buildTableEntry(
-                table_name="MyIngress.ipv4_nids",
-                priority=int(table_entry["priority"]),
-                match_fields=match_fields,
-                action_name="MyIngress."+table_entry["action"])
-        else:
-            match_fields = build_match_fields(table_entry, 6)
-            table_entry = p4info_helper.buildTableEntry(
-                table_name="MyIngress.ipv6_nids",
-                priority=int(table_entry["priority"]),
-                match_fields=match_fields,
-                action_name="MyIngress."+table_entry["action"])
-        switch.WriteTableEntry(table_entry)
+        # Remove "don't care entries" (e.g. 0.0.0.0 IP or 0-65535 port range) because P4Runtime does not accept them
+        match_fields = build_match_fields(table_entry)
+        table_entry = p4info_helper.buildTableEntry(
+            table_name="MyIngress.ipv4_nids",
+            priority=int(table_entry["priority"]),
+            match_fields=match_fields,
+            action_name="MyIngress."+table_entry["action"])
+            
+        try:
+            switch.WriteTableEntry(table_entry)
+        except Exception as e:
+            print(e)
 
 # Don't add to the match fields "don't care values", including 0.0.0.0 IPs and 0->65535 port ranges, because P4 does not support them. Instead, leave it blank
 def build_match_fields(table_entry_fields, ip_version=4):
@@ -368,7 +364,7 @@ def build_match_fields(table_entry_fields, ip_version=4):
     if table_entry_fields["dstPortLower"] != "0" or table_entry_fields["dstPortUpper"] != "65535":
        match_fields["meta.dstPort"] = (int(table_entry_fields["dstPortLower"]), int(table_entry_fields["dstPortUpper"]))
 
-    # match_fields["meta.flags"] = int(table_entry_fields["flags"], 2)
+    match_fields["meta.flags"] = int(table_entry_fields["flags"], 2)
 
     return match_fields
 

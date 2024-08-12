@@ -30,13 +30,13 @@ amt_of_table_entries=$(wc -l < $table_entries_file)
 table_entries_file="../src/p4_table_entries_random.config"
 
 # Run an experiment in each one of the following scenarios:
-for topology in {"linear, tree"}; do
-	for offloading_algorithm in {"simple","firstfit","bestfit"; do
-		for available_space in {25,50,75,100}; do
+for topology in "linear"; do
+	for offloading_algorithm in "simple"; do
+		for available_space in 75; do
 			a=$((available_space*amt_of_table_entries))
 			space_per_sw=$(echo $(( a%100? a/100+1:a/100 )))
 
-			results_folder=${output_folder}/${topology}_${offloading_algorithm}_${available_space}_registered_random/
+			results_folder=${output_folder}/${topology}_${offloading_algorithm}_${available_space}/
 			mkdir $results_folder
 
 			./run_algorithms_experiment.sh $results_folder $ruleset_folder $table_entries_file $topology $offloading_algorithm $space_per_sw

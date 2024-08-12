@@ -10,7 +10,6 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     counter(64, CounterType.packets) received;
 
     direct_counter(CounterType.packets_and_bytes) ipv4_nids_table_hit_counter;
-    direct_counter(CounterType.packets_and_bytes) ipv6_nids_table_hit_counter;
 
     /**** Actions ****/
 
@@ -36,30 +35,11 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
            meta.srcPort: range;
            hdr.ip.v4.dstAddr: ternary;
            meta.dstPort: range;
-           //meta.flags: exact;
+           meta.flags: exact;
         }
         size = 10240;
         default_action = pass(); 
         counters = ipv4_nids_table_hit_counter;
-    }
-
-    table ipv6_nids{
-        actions = {
-            pass;
-            clone_to_ids;
-            NoAction;
-        }
-        key = {                
-           meta.protocol: exact;
-           hdr.ip.v6.srcAddr: ternary;
-           meta.srcPort: range;
-           hdr.ip.v6.dstAddr: ternary;
-           meta.dstPort: range;
-           //meta.flags: exact;
-        }
-        size = 10240;
-        default_action = pass();
-        counters = ipv6_nids_table_hit_counter;
     }
 
     /**** Fowarding Table ****/
@@ -88,7 +68,7 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
             bit<128> dst_IP = 0;
 
             if (hdr.ip.v4.isValid()){
-                //ipv4_lpm.apply();
+                ipv4_lpm.apply();
                 src_IP = (bit<128>)hdr.ip.v4.srcAddr;
                 dst_IP = (bit<128>)hdr.ip.v4.dstAddr;
             }else if(hdr.ip.v6.isValid()){
@@ -99,10 +79,8 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
             // Checks if packet match an IDS rule and determines the approriate egress port
             if (hdr.ip.v4.isValid()){
                ipv4_nids.apply();
-            }else if(hdr.ip.v6.isValid()){
-               ipv6_nids.apply();
             }
-
+            
             if(meta.ids_table_match){
                 clone(CloneType.I2E, REPORT_MIRROR_SESSION_ID);
             }

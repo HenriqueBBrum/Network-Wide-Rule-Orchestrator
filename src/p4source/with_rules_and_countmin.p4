@@ -196,13 +196,13 @@ control MyIngress(inout headers hdr, inout metadata meta, inout standard_metadat
     /**** Apply block ****/
     apply {
         received.count((bit<32>)standard_metadata.ingress_port);
-        standard_metadata.egress_spec = DEFAULT_PORT;
+        // standard_metadata.egress_spec = DEFAULT_PORT;
         if (hdr.ip.v4.isValid() || hdr.ip.v6.isValid()){
             bit<128> src_IP = 0;
             bit<128> dst_IP = 0;
 
             if (hdr.ip.v4.isValid()){
-                //ipv4_lpm.apply();
+                ipv4_lpm.apply();
                 src_IP = (bit<128>)hdr.ip.v4.srcAddr;
                 dst_IP = (bit<128>)hdr.ip.v4.dstAddr;
             }else if(hdr.ip.v6.isValid()){
