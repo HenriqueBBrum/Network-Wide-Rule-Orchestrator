@@ -1,6 +1,6 @@
 # Network-wide Rule Orchestrator
 
-This repository contains the code and instructions to replicate the results of my Master's Dissertation entitled:: ()[]. 
+This repository contains the code and instructions to replicate the results of my Master's Dissertation entitled: [Leveraging network-wide orchestration in programmable networks for enhanced NIDS performance](https://tede2.pucrs.br/tede2/handle/tede/11656). 
 
 ## **Table of Contents**
 - [Installation Process](#installation-process)
